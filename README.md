@@ -94,7 +94,7 @@ Complete the 6-step wizard in your browser:
 1. **Gym details**: name, timezone, currency (avatar auto-generated from name)
 2. **Location**: branch name and address
 3. **Operating hours**: morning/evening session times per day
-4. **Payment mode**: Cash Only, Track & Receipt, or Full Processing (gateway)
+4. **Payment mode**: Cash Only (`CASH_ONLY`), Track and Receipt (`TRACK_AND_RECEIPT`), or Full Processing (`FULL_PROCESSING`)
 5. **Membership plans**: edit the pre-filled Daily / Weekly / Monthly templates
 6. **Admin account**: your email and password
 

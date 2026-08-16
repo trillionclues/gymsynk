@@ -17,10 +17,10 @@ Version 1.0.0
 GymSynk's UI has two surfaces — the staff portal (cashier/admin dashboard) and the member PWA — but they share one design language. Both are installed as PWAs. Both run on the same token system. There is no "consumer product vs. ops tool" split in the visual identity.
 
 **Principles:**
-- **Minimal, not sterile.** Warm neutral base (not pure cool gray) — same character as Mockline.
-- **Purposeful color.** The warm gold accent is reserved for primary actions and brand. Status colors (green, red, amber) communicate check-in state and are not decorative.
-- **Fast legibility.** Cashiers read the live feed in motion, on tablets, in mixed gym lighting. Status badges must be immediately scannable.
-- **Dark mode from day 1.** Not an afterthought — same token system, inverted.
+- **Minimal and functional.** Near-neutral palette — no heavy accent colors, no decorative chrome. The interface should recede so the data is what the cashier reads.
+- **Color as signal, not style.** Status colors (valid, expired, override) are deliberately muted — low-chroma, readable but not alarming. The only vivid color in the system is the VALID check-in state, because that's what matters most at the entrance.
+- **Fast legibility.** Cashiers read the live feed in motion, on tablets, in mixed gym lighting. Status badges must be immediately scannable without needing to read the label.
+- **Dark mode from day 1.** Not an afterthought — same token system, inverted. Dark is the expected mode for a tablet mounted at a gym entrance.
 
 ---
 
@@ -33,68 +33,75 @@ Implemented as CSS custom properties on `:root.light` and `:root.dark`. Applied 
 ```css
 :root.light {
   /* ── Surfaces ─────────────────────────────────────────── */
-  --color-bg:               #fafafa;       /* Page background */
+  --color-bg:               #f9f9f9;       /* Page background — off-white, not pure white */
   --color-surface:          #ffffff;       /* Cards, panels, modals */
-  --color-surface-2:        #f5f5f5;       /* Sidebar, secondary panels */
-  --color-surface-3:        #efefef;       /* Hover states on surface-2 */
+  --color-surface-2:        #f4f4f5;       /* Sidebar, secondary panels */
+  --color-surface-3:        #eeeeef;       /* Hover states on surface-2 */
 
   /* ── Borders ──────────────────────────────────────────── */
-  --color-border:           #ededf3;       /* Default borders, dividers */
-  --color-border-strong:    #d4d4d8;       /* Input borders, table lines */
-  --color-border-highlight: rgba(201, 162, 39, 0.20); /* Accent-tinted border */
+  --color-border:           #e4e4e7;       /* Default borders, dividers */
+  --color-border-strong:    #d1d1d6;       /* Input borders, table lines */
+  --color-border-highlight: rgba(113, 113, 122, 0.20); /* Neutral-tinted border — no color leak */
 
-  /* ── Primary (Warm Gold) ──────────────────────────────── */
-  --color-primary:          #C9A227;       /* Buttons, links, focus rings */
-  --color-primary-hover:    #B08D1F;       /* Darken 10% for hover */
-  --color-primary-muted:    rgba(201, 162, 39, 0.10); /* Ghost backgrounds */
-  --color-primary-muted-hover: rgba(201, 162, 39, 0.18);
+  /* ── Primary (Near-black — clean, minimal) ────────────── */
+  --color-primary:          #18181b;       /* Buttons, active states */
+  --color-primary-hover:    #09090b;       /* Deepen on hover */
+  --color-primary-muted:    rgba(24, 24, 27, 0.06);  /* Ghost backgrounds */
+  --color-primary-muted-hover: rgba(24, 24, 27, 0.10);
+
+  /* ── Accent (Warm tone — used sparingly: focus rings, highlights) */
+  --color-accent:           #a16207;       /* Muted amber/gold — desaturated */
+  --color-accent-hover:     #854d0e;
+  --color-accent-muted:     rgba(161, 98, 7, 0.08);
+  --color-accent-muted-hover: rgba(161, 98, 7, 0.14);
 
   /* ── Text ─────────────────────────────────────────────── */
-  --color-text:             #1a1a2e;       /* Body copy */
+  --color-text:             #18181b;       /* Body copy */
   --color-text-strong:      #09090b;       /* Headings, labels */
   --color-text-muted:       #52525b;       /* Secondary text, descriptions */
   --color-text-subtle:      #a1a1aa;       /* Placeholders, timestamps */
-  --color-text-on-primary:  #0a0a0b;       /* Text on gold button backgrounds */
+  --color-text-on-primary:  #ffffff;       /* Text on primary (near-black) buttons */
+  --color-text-on-accent:   #ffffff;       /* Text on accent backgrounds */
 
   /* ── Navigation ───────────────────────────────────────── */
   --color-nav-text:         #71717a;       /* Inactive nav items */
   --color-nav-text-active:  #09090b;       /* Active nav item */
-  --color-nav-bg-scrolled:  rgba(255, 255, 255, 0.85); /* Sticky nav blur bg */
+  --color-nav-bg-scrolled:  rgba(249, 249, 249, 0.90); /* Sticky nav blur bg */
 
-  /* ── Status — Check-in States ─────────────────────────── */
-  --color-status-valid:         #059669;   /* VALID check-in (emerald) */
-  --color-status-valid-bg:      rgba(5, 150, 105, 0.08);
-  --color-status-expired:       #DC2626;   /* EXPIRED_PLAN (red) */
-  --color-status-expired-bg:    rgba(220, 38, 38, 0.08);
-  --color-status-override:      #D97706;   /* OVERRIDE / manual (amber) */
-  --color-status-override-bg:   rgba(217, 119, 6, 0.08);
-  --color-status-wrong:         #71717a;   /* WRONG_SESSION / WRONG_DAY (neutral) */
-  --color-status-wrong-bg:      rgba(113, 113, 122, 0.08);
-  --color-status-duplicate:     #7C3AED;   /* ALREADY_CHECKED_IN (violet) */
-  --color-status-duplicate-bg:  rgba(124, 58, 237, 0.08);
+  /* ── Status — Check-in States (muted, readable, not alarming) */
+  --color-status-valid:         #16a34a;   /* Valid check-in — green, present but not vivid */
+  --color-status-valid-bg:      rgba(22, 163, 74, 0.07);
+  --color-status-expired:       #b91c1c;   /* Expired — muted red */
+  --color-status-expired-bg:    rgba(185, 28, 28, 0.07);
+  --color-status-override:      #b45309;   /* Override / manual — muted amber */
+  --color-status-override-bg:   rgba(180, 83, 9, 0.07);
+  --color-status-wrong:         #71717a;   /* Wrong session / day — neutral gray */
+  --color-status-wrong-bg:      rgba(113, 113, 122, 0.07);
+  --color-status-duplicate:     #6d28d9;   /* Already checked in — muted violet */
+  --color-status-duplicate-bg:  rgba(109, 40, 217, 0.07);
 
-  /* ── Plan Badges ──────────────────────────────────────── */
-  --color-plan-daily:       #D97706;       /* Amber — short-term */
-  --color-plan-daily-bg:    rgba(217, 119, 6, 0.10);
-  --color-plan-weekly:      #2563EB;       /* Blue — mid-term */
-  --color-plan-weekly-bg:   rgba(37, 99, 235, 0.10);
-  --color-plan-monthly:     #059669;       /* Emerald — committed */
-  --color-plan-monthly-bg:  rgba(5, 150, 105, 0.10);
-  --color-plan-custom:      #7C3AED;       /* Violet — custom/special */
-  --color-plan-custom-bg:   rgba(124, 58, 237, 0.10);
+  /* ── Plan Badges (all muted — no vivid color) ─────────── */
+  --color-plan-daily:       #92400e;       /* Muted amber-brown */
+  --color-plan-daily-bg:    rgba(146, 64, 14, 0.07);
+  --color-plan-weekly:      #1d4ed8;       /* Muted blue */
+  --color-plan-weekly-bg:   rgba(29, 78, 216, 0.07);
+  --color-plan-monthly:     #166534;       /* Muted green */
+  --color-plan-monthly-bg:  rgba(22, 101, 52, 0.07);
+  --color-plan-custom:      #5b21b6;       /* Muted violet */
+  --color-plan-custom-bg:   rgba(91, 33, 182, 0.07);
 
   /* ── Session Badges ───────────────────────────────────── */
-  --color-session-morning:  #C9A227;       /* AM — warm gold */
-  --color-session-morning-bg: rgba(201, 162, 39, 0.10);
-  --color-session-evening:  #52525b;       /* PM — neutral dark */
-  --color-session-evening-bg: rgba(82, 82, 91, 0.10);
+  --color-session-morning:  #a16207;       /* Muted amber — morning warmth */
+  --color-session-morning-bg: rgba(161, 98, 7, 0.07);
+  --color-session-evening:  #3f3f46;       /* Dark neutral — evening */
+  --color-session-evening-bg: rgba(63, 63, 70, 0.07);
 
   /* ── Utility ──────────────────────────────────────────── */
-  --color-shadow:           rgba(0, 0, 0, 0.08);
-  --color-shadow-md:        rgba(0, 0, 0, 0.12);
-  --color-grid-line:        rgba(0, 0, 0, 0.04);   /* Background grid pattern */
-  --color-logo-line:        #0a0a0b;
-  --color-overlay:          rgba(0, 0, 0, 0.40);   /* Modal backdrops */
+  --color-shadow:           rgba(0, 0, 0, 0.06);
+  --color-shadow-md:        rgba(0, 0, 0, 0.10);
+  --color-grid-line:        rgba(0, 0, 0, 0.035);  /* Very subtle background grid */
+  --color-logo-line:        #09090b;
+  --color-overlay:          rgba(0, 0, 0, 0.35);   /* Modal backdrops */
 }
 ```
 
@@ -103,68 +110,75 @@ Implemented as CSS custom properties on `:root.light` and `:root.dark`. Applied 
 ```css
 :root.dark {
   /* ── Surfaces ─────────────────────────────────────────── */
-  --color-bg:               #0a0a0b;       /* Page background */
-  --color-surface:          #18181b;       /* Cards, panels, modals */
-  --color-surface-2:        #1c1c1f;       /* Sidebar, secondary panels */
-  --color-surface-3:        #222226;       /* Hover states on surface-2 */
+  --color-bg:               #0a0a0b;       /* Page background — near-black */
+  --color-surface:          #111113;       /* Cards, panels, modals */
+  --color-surface-2:        #18181b;       /* Sidebar, secondary panels */
+  --color-surface-3:        #1e1e21;       /* Hover states on surface-2 */
 
   /* ── Borders ──────────────────────────────────────────── */
   --color-border:           #27272a;       /* Default borders, dividers */
   --color-border-strong:    #3f3f46;       /* Input borders, table lines */
-  --color-border-highlight: rgba(242, 201, 76, 0.15);
+  --color-border-highlight: rgba(161, 161, 170, 0.15); /* Neutral-tinted border */
 
-  /* ── Primary (Warm Gold — lightened for dark bg) ─────── */
-  --color-primary:          #F2C94C;       /* Buttons, links, focus rings */
-  --color-primary-hover:    #E6BC38;       /* Darken slightly for hover */
-  --color-primary-muted:    rgba(242, 201, 76, 0.12);
-  --color-primary-muted-hover: rgba(242, 201, 76, 0.20);
+  /* ── Primary (Off-white — clean inversion of light mode) ─ */
+  --color-primary:          #fafafa;       /* Buttons, active states */
+  --color-primary-hover:    #e4e4e7;       /* Slightly dimmed on hover */
+  --color-primary-muted:    rgba(250, 250, 250, 0.07);
+  --color-primary-muted-hover: rgba(250, 250, 250, 0.12);
+
+  /* ── Accent (Muted warm tone — focus rings, highlights) ── */
+  --color-accent:           #ca8a04;       /* Muted amber-gold — readable on dark */
+  --color-accent-hover:     #a16207;
+  --color-accent-muted:     rgba(202, 138, 4, 0.10);
+  --color-accent-muted-hover: rgba(202, 138, 4, 0.18);
 
   /* ── Text ─────────────────────────────────────────────── */
-  --color-text:             #e4e4e7;       /* Body copy */
+  --color-text:             #d4d4d8;       /* Body copy — not pure white */
   --color-text-strong:      #fafafa;       /* Headings, labels */
-  --color-text-muted:       #a1a1aa;       /* Secondary text */
+  --color-text-muted:       #71717a;       /* Secondary text */
   --color-text-subtle:      #52525b;       /* Placeholders, timestamps */
-  --color-text-on-primary:  #0a0a0b;       /* Text on gold button backgrounds */
+  --color-text-on-primary:  #09090b;       /* Text on off-white buttons */
+  --color-text-on-accent:   #09090b;       /* Text on accent backgrounds */
 
   /* ── Navigation ───────────────────────────────────────── */
-  --color-nav-text:         #71717a;
+  --color-nav-text:         #52525b;
   --color-nav-text-active:  #fafafa;
-  --color-nav-bg-scrolled:  rgba(10, 10, 11, 0.85);
+  --color-nav-bg-scrolled:  rgba(10, 10, 11, 0.90);
 
-  /* ── Status — Check-in States ─────────────────────────── */
-  --color-status-valid:         #34D399;   /* Lighter emerald for dark bg */
-  --color-status-valid-bg:      rgba(52, 211, 153, 0.10);
-  --color-status-expired:       #F87171;   /* Lighter red */
-  --color-status-expired-bg:    rgba(248, 113, 113, 0.10);
-  --color-status-override:      #FCD34D;   /* Lighter amber */
-  --color-status-override-bg:   rgba(252, 211, 77, 0.10);
-  --color-status-wrong:         #71717a;
-  --color-status-wrong-bg:      rgba(113, 113, 122, 0.10);
-  --color-status-duplicate:     #A78BFA;   /* Lighter violet */
-  --color-status-duplicate-bg:  rgba(167, 139, 250, 0.10);
+  /* ── Status — Check-in States (muted, readable on dark bg) */
+  --color-status-valid:         #4ade80;   /* Muted green — readable, not vivid */
+  --color-status-valid-bg:      rgba(74, 222, 128, 0.08);
+  --color-status-expired:       #f87171;   /* Muted red */
+  --color-status-expired-bg:    rgba(248, 113, 113, 0.08);
+  --color-status-override:      #fbbf24;   /* Muted amber */
+  --color-status-override-bg:   rgba(251, 191, 36, 0.08);
+  --color-status-wrong:         #52525b;   /* Neutral gray */
+  --color-status-wrong-bg:      rgba(82, 82, 91, 0.08);
+  --color-status-duplicate:     #a78bfa;   /* Muted violet */
+  --color-status-duplicate-bg:  rgba(167, 139, 250, 0.08);
 
   /* ── Plan Badges ──────────────────────────────────────── */
-  --color-plan-daily:       #FCD34D;
-  --color-plan-daily-bg:    rgba(252, 211, 77, 0.10);
-  --color-plan-weekly:      #60A5FA;
-  --color-plan-weekly-bg:   rgba(96, 165, 250, 0.10);
-  --color-plan-monthly:     #34D399;
-  --color-plan-monthly-bg:  rgba(52, 211, 153, 0.10);
-  --color-plan-custom:      #A78BFA;
-  --color-plan-custom-bg:   rgba(167, 139, 250, 0.10);
+  --color-plan-daily:       #fbbf24;       /* Muted amber */
+  --color-plan-daily-bg:    rgba(251, 191, 36, 0.08);
+  --color-plan-weekly:      #60a5fa;       /* Muted blue */
+  --color-plan-weekly-bg:   rgba(96, 165, 250, 0.08);
+  --color-plan-monthly:     #4ade80;       /* Muted green */
+  --color-plan-monthly-bg:  rgba(74, 222, 128, 0.08);
+  --color-plan-custom:      #a78bfa;       /* Muted violet */
+  --color-plan-custom-bg:   rgba(167, 139, 250, 0.08);
 
   /* ── Session Badges ───────────────────────────────────── */
-  --color-session-morning:  #F2C94C;
-  --color-session-morning-bg: rgba(242, 201, 76, 0.12);
-  --color-session-evening:  #a1a1aa;
-  --color-session-evening-bg: rgba(161, 161, 170, 0.10);
+  --color-session-morning:  #ca8a04;       /* Muted amber-gold */
+  --color-session-morning-bg: rgba(202, 138, 4, 0.10);
+  --color-session-evening:  #71717a;       /* Mid gray */
+  --color-session-evening-bg: rgba(113, 113, 122, 0.10);
 
   /* ── Utility ──────────────────────────────────────────── */
-  --color-shadow:           rgba(0, 0, 0, 0.40);
-  --color-shadow-md:        rgba(0, 0, 0, 0.60);
-  --color-grid-line:        rgba(255, 255, 255, 0.03);
+  --color-shadow:           rgba(0, 0, 0, 0.50);
+  --color-shadow-md:        rgba(0, 0, 0, 0.70);
+  --color-grid-line:        rgba(255, 255, 255, 0.025);
   --color-logo-line:        #fafafa;
-  --color-overlay:          rgba(0, 0, 0, 0.60);
+  --color-overlay:          rgba(0, 0, 0, 0.65);
 }
 ```
 
@@ -212,17 +226,27 @@ const config: Config = {
         'surface-3':     'var(--color-surface-3)',
         border:          'var(--color-border)',
         'border-strong': 'var(--color-border-strong)',
+        // Primary: near-black in light, off-white in dark
         primary: {
-          DEFAULT: 'var(--color-primary)',
-          hover:   'var(--color-primary-hover)',
-          muted:   'var(--color-primary-muted)',
+          DEFAULT:      'var(--color-primary)',
+          hover:        'var(--color-primary-hover)',
+          muted:        'var(--color-primary-muted)',
+          'muted-hover':'var(--color-primary-muted-hover)',
+        },
+        // Accent: muted warm tone — focus rings, highlights only
+        accent: {
+          DEFAULT:      'var(--color-accent)',
+          hover:        'var(--color-accent-hover)',
+          muted:        'var(--color-accent-muted)',
+          'muted-hover':'var(--color-accent-muted-hover)',
         },
         text: {
-          DEFAULT: 'var(--color-text)',
-          strong:  'var(--color-text-strong)',
-          muted:   'var(--color-text-muted)',
-          subtle:  'var(--color-text-subtle)',
+          DEFAULT:      'var(--color-text)',
+          strong:       'var(--color-text-strong)',
+          muted:        'var(--color-text-muted)',
+          subtle:       'var(--color-text-subtle)',
           'on-primary': 'var(--color-text-on-primary)',
+          'on-accent':  'var(--color-text-on-accent)',
         },
         status: {
           valid:          'var(--color-status-valid)',
@@ -237,14 +261,14 @@ const config: Config = {
           'duplicate-bg': 'var(--color-status-duplicate-bg)',
         },
         plan: {
-          daily:       'var(--color-plan-daily)',
-          'daily-bg':  'var(--color-plan-daily-bg)',
-          weekly:      'var(--color-plan-weekly)',
-          'weekly-bg': 'var(--color-plan-weekly-bg)',
-          monthly:     'var(--color-plan-monthly)',
-          'monthly-bg':'var(--color-plan-monthly-bg)',
-          custom:      'var(--color-plan-custom)',
-          'custom-bg': 'var(--color-plan-custom-bg)',
+          daily:        'var(--color-plan-daily)',
+          'daily-bg':   'var(--color-plan-daily-bg)',
+          weekly:       'var(--color-plan-weekly)',
+          'weekly-bg':  'var(--color-plan-weekly-bg)',
+          monthly:      'var(--color-plan-monthly)',
+          'monthly-bg': 'var(--color-plan-monthly-bg)',
+          custom:       'var(--color-plan-custom)',
+          'custom-bg':  'var(--color-plan-custom-bg)',
         },
         session: {
           morning:       'var(--color-session-morning)',
@@ -451,8 +475,8 @@ Both the cashier/admin portal and member PWA use the same manifest theme.
 {
   "name": "GymSynk",
   "short_name": "GymSynk",
-  "theme_color": "#C9A227",
-  "background_color": "#fafafa",
+  "theme_color": "#18181b",
+  "background_color": "#f9f9f9",
   "display": "standalone",
   "orientation": "any",
   "icons": [
@@ -463,7 +487,7 @@ Both the cashier/admin portal and member PWA use the same manifest theme.
 }
 ```
 
-For dark-mode-aware manifest support (Chrome 93+), the `manifest.ts` in Next.js can return different `theme_color` based on `prefers-color-scheme`. For v1, `#C9A227` works acceptably in both modes as the browser chrome accent.
+For dark-mode-aware manifest support (Chrome 93+), `manifest.ts` can return `theme_color: "#0a0a0b"` when `prefers-color-scheme: dark`. For v1, `#18181b` works in both modes as a clean, neutral browser chrome accent — no color bleed from a gold or colored value.
 
 ---
 
@@ -491,102 +515,112 @@ The QR scanner station (`/dashboard/check-in/scanner`) and the QR display on the
 
 /* ── Light mode tokens ──────────────────────────────────── */
 :root.light {
-  --color-bg:               #fafafa;
+  --color-bg:               #f9f9f9;
   --color-surface:          #ffffff;
-  --color-surface-2:        #f5f5f5;
-  --color-surface-3:        #efefef;
-  --color-border:           #ededf3;
-  --color-border-strong:    #d4d4d8;
-  --color-border-highlight: rgba(201, 162, 39, 0.20);
-  --color-primary:          #C9A227;
-  --color-primary-hover:    #B08D1F;
-  --color-primary-muted:    rgba(201, 162, 39, 0.10);
-  --color-primary-muted-hover: rgba(201, 162, 39, 0.18);
-  --color-text:             #1a1a2e;
+  --color-surface-2:        #f4f4f5;
+  --color-surface-3:        #eeeeef;
+  --color-border:           #e4e4e7;
+  --color-border-strong:    #d1d1d6;
+  --color-border-highlight: rgba(113, 113, 122, 0.20);
+  --color-primary:          #18181b;
+  --color-primary-hover:    #09090b;
+  --color-primary-muted:    rgba(24, 24, 27, 0.06);
+  --color-primary-muted-hover: rgba(24, 24, 27, 0.10);
+  --color-accent:           #a16207;
+  --color-accent-hover:     #854d0e;
+  --color-accent-muted:     rgba(161, 98, 7, 0.08);
+  --color-accent-muted-hover: rgba(161, 98, 7, 0.14);
+  --color-text:             #18181b;
   --color-text-strong:      #09090b;
   --color-text-muted:       #52525b;
   --color-text-subtle:      #a1a1aa;
-  --color-text-on-primary:  #0a0a0b;
+  --color-text-on-primary:  #ffffff;
+  --color-text-on-accent:   #ffffff;
   --color-nav-text:         #71717a;
   --color-nav-text-active:  #09090b;
-  --color-nav-bg-scrolled:  rgba(255, 255, 255, 0.85);
-  --color-status-valid:         #059669;
-  --color-status-valid-bg:      rgba(5, 150, 105, 0.08);
-  --color-status-expired:       #DC2626;
-  --color-status-expired-bg:    rgba(220, 38, 38, 0.08);
-  --color-status-override:      #D97706;
-  --color-status-override-bg:   rgba(217, 119, 6, 0.08);
+  --color-nav-bg-scrolled:  rgba(249, 249, 249, 0.90);
+  --color-status-valid:         #16a34a;
+  --color-status-valid-bg:      rgba(22, 163, 74, 0.07);
+  --color-status-expired:       #b91c1c;
+  --color-status-expired-bg:    rgba(185, 28, 28, 0.07);
+  --color-status-override:      #b45309;
+  --color-status-override-bg:   rgba(180, 83, 9, 0.07);
   --color-status-wrong:         #71717a;
-  --color-status-wrong-bg:      rgba(113, 113, 122, 0.08);
-  --color-status-duplicate:     #7C3AED;
-  --color-status-duplicate-bg:  rgba(124, 58, 237, 0.08);
-  --color-plan-daily:       #D97706;
-  --color-plan-daily-bg:    rgba(217, 119, 6, 0.10);
-  --color-plan-weekly:      #2563EB;
-  --color-plan-weekly-bg:   rgba(37, 99, 235, 0.10);
-  --color-plan-monthly:     #059669;
-  --color-plan-monthly-bg:  rgba(5, 150, 105, 0.10);
-  --color-plan-custom:      #7C3AED;
-  --color-plan-custom-bg:   rgba(124, 58, 237, 0.10);
-  --color-session-morning:  #C9A227;
-  --color-session-morning-bg: rgba(201, 162, 39, 0.10);
-  --color-session-evening:  #52525b;
-  --color-session-evening-bg: rgba(82, 82, 91, 0.10);
-  --color-shadow:           rgba(0, 0, 0, 0.08);
-  --color-shadow-md:        rgba(0, 0, 0, 0.12);
-  --color-grid-line:        rgba(0, 0, 0, 0.04);
-  --color-logo-line:        #0a0a0b;
-  --color-overlay:          rgba(0, 0, 0, 0.40);
+  --color-status-wrong-bg:      rgba(113, 113, 122, 0.07);
+  --color-status-duplicate:     #6d28d9;
+  --color-status-duplicate-bg:  rgba(109, 40, 217, 0.07);
+  --color-plan-daily:       #92400e;
+  --color-plan-daily-bg:    rgba(146, 64, 14, 0.07);
+  --color-plan-weekly:      #1d4ed8;
+  --color-plan-weekly-bg:   rgba(29, 78, 216, 0.07);
+  --color-plan-monthly:     #166534;
+  --color-plan-monthly-bg:  rgba(22, 101, 52, 0.07);
+  --color-plan-custom:      #5b21b6;
+  --color-plan-custom-bg:   rgba(91, 33, 182, 0.07);
+  --color-session-morning:  #a16207;
+  --color-session-morning-bg: rgba(161, 98, 7, 0.07);
+  --color-session-evening:  #3f3f46;
+  --color-session-evening-bg: rgba(63, 63, 70, 0.07);
+  --color-shadow:           rgba(0, 0, 0, 0.06);
+  --color-shadow-md:        rgba(0, 0, 0, 0.10);
+  --color-grid-line:        rgba(0, 0, 0, 0.035);
+  --color-logo-line:        #09090b;
+  --color-overlay:          rgba(0, 0, 0, 0.35);
 }
 
 /* ── Dark mode tokens ───────────────────────────────────── */
 :root.dark {
   --color-bg:               #0a0a0b;
-  --color-surface:          #18181b;
-  --color-surface-2:        #1c1c1f;
-  --color-surface-3:        #222226;
+  --color-surface:          #111113;
+  --color-surface-2:        #18181b;
+  --color-surface-3:        #1e1e21;
   --color-border:           #27272a;
   --color-border-strong:    #3f3f46;
-  --color-border-highlight: rgba(242, 201, 76, 0.15);
-  --color-primary:          #F2C94C;
-  --color-primary-hover:    #E6BC38;
-  --color-primary-muted:    rgba(242, 201, 76, 0.12);
-  --color-primary-muted-hover: rgba(242, 201, 76, 0.20);
-  --color-text:             #e4e4e7;
+  --color-border-highlight: rgba(161, 161, 170, 0.15);
+  --color-primary:          #fafafa;
+  --color-primary-hover:    #e4e4e7;
+  --color-primary-muted:    rgba(250, 250, 250, 0.07);
+  --color-primary-muted-hover: rgba(250, 250, 250, 0.12);
+  --color-accent:           #ca8a04;
+  --color-accent-hover:     #a16207;
+  --color-accent-muted:     rgba(202, 138, 4, 0.10);
+  --color-accent-muted-hover: rgba(202, 138, 4, 0.18);
+  --color-text:             #d4d4d8;
   --color-text-strong:      #fafafa;
-  --color-text-muted:       #a1a1aa;
+  --color-text-muted:       #71717a;
   --color-text-subtle:      #52525b;
-  --color-text-on-primary:  #0a0a0b;
-  --color-nav-text:         #71717a;
+  --color-text-on-primary:  #09090b;
+  --color-text-on-accent:   #09090b;
+  --color-nav-text:         #52525b;
   --color-nav-text-active:  #fafafa;
-  --color-nav-bg-scrolled:  rgba(10, 10, 11, 0.85);
-  --color-status-valid:         #34D399;
-  --color-status-valid-bg:      rgba(52, 211, 153, 0.10);
-  --color-status-expired:       #F87171;
-  --color-status-expired-bg:    rgba(248, 113, 113, 0.10);
-  --color-status-override:      #FCD34D;
-  --color-status-override-bg:   rgba(252, 211, 77, 0.10);
-  --color-status-wrong:         #71717a;
-  --color-status-wrong-bg:      rgba(113, 113, 122, 0.10);
-  --color-status-duplicate:     #A78BFA;
-  --color-status-duplicate-bg:  rgba(167, 139, 250, 0.10);
-  --color-plan-daily:       #FCD34D;
-  --color-plan-daily-bg:    rgba(252, 211, 77, 0.10);
-  --color-plan-weekly:      #60A5FA;
-  --color-plan-weekly-bg:   rgba(96, 165, 250, 0.10);
-  --color-plan-monthly:     #34D399;
-  --color-plan-monthly-bg:  rgba(52, 211, 153, 0.10);
-  --color-plan-custom:      #A78BFA;
-  --color-plan-custom-bg:   rgba(167, 139, 250, 0.10);
-  --color-session-morning:  #F2C94C;
-  --color-session-morning-bg: rgba(242, 201, 76, 0.12);
-  --color-session-evening:  #a1a1aa;
-  --color-session-evening-bg: rgba(161, 161, 170, 0.10);
-  --color-shadow:           rgba(0, 0, 0, 0.40);
-  --color-shadow-md:        rgba(0, 0, 0, 0.60);
-  --color-grid-line:        rgba(255, 255, 255, 0.03);
+  --color-nav-bg-scrolled:  rgba(10, 10, 11, 0.90);
+  --color-status-valid:         #4ade80;
+  --color-status-valid-bg:      rgba(74, 222, 128, 0.08);
+  --color-status-expired:       #f87171;
+  --color-status-expired-bg:    rgba(248, 113, 113, 0.08);
+  --color-status-override:      #fbbf24;
+  --color-status-override-bg:   rgba(251, 191, 36, 0.08);
+  --color-status-wrong:         #52525b;
+  --color-status-wrong-bg:      rgba(82, 82, 91, 0.08);
+  --color-status-duplicate:     #a78bfa;
+  --color-status-duplicate-bg:  rgba(167, 139, 250, 0.08);
+  --color-plan-daily:       #fbbf24;
+  --color-plan-daily-bg:    rgba(251, 191, 36, 0.08);
+  --color-plan-weekly:      #60a5fa;
+  --color-plan-weekly-bg:   rgba(96, 165, 250, 0.08);
+  --color-plan-monthly:     #4ade80;
+  --color-plan-monthly-bg:  rgba(74, 222, 128, 0.08);
+  --color-plan-custom:      #a78bfa;
+  --color-plan-custom-bg:   rgba(167, 139, 250, 0.08);
+  --color-session-morning:  #ca8a04;
+  --color-session-morning-bg: rgba(202, 138, 4, 0.10);
+  --color-session-evening:  #71717a;
+  --color-session-evening-bg: rgba(113, 113, 122, 0.10);
+  --color-shadow:           rgba(0, 0, 0, 0.50);
+  --color-shadow-md:        rgba(0, 0, 0, 0.70);
+  --color-grid-line:        rgba(255, 255, 255, 0.025);
   --color-logo-line:        #fafafa;
-  --color-overlay:          rgba(0, 0, 0, 0.60);
+  --color-overlay:          rgba(0, 0, 0, 0.65);
 }
 
 /* ── Base styles ────────────────────────────────────────── */
@@ -631,9 +665,9 @@ main,
   z-index: 1;
 }
 
-/* ── Focus styles ───────────────────────────────────────── */
+/* ── Focus styles (accent ring — not primary, keeps buttons clean) */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 2px;
 }

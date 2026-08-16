@@ -214,7 +214,7 @@ WebSocket connections are per-server-instance. For horizontal scaling, the Redis
 
 # 5\. Payment Strategy Pattern
 
-The PaymentService selects a strategy at runtime based on the organization's payment_mode setting. Adding a new gateway (e.g. Flutterwave) requires implementing one interface - no changes to PaymentService or controller.
+The PaymentService selects a strategy at runtime based on the organization's `payment_mode` setting. Adding a new gateway requires implementing one interface — no changes to PaymentService or controller.
 
 public sealed interface PaymentStrategy
 
@@ -233,7 +233,7 @@ boolean requiresExternalConfirmation();
 | ----------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | CashOnlyStrategy        | payment_mode = CASH_ONLY         | Records amount, method, cashier. No receipt. No external call.                                                                         |
 | TrackAndReceiptStrategy | payment_mode = TRACK_AND_RECEIPT | Extends cash: generates PDF receipt via iText **on-demand** (in-memory, streamed as HTTP response, **never stored on disk**). Emails if member has email address. |
-| FullProcessingStrategy  | payment_mode = FULL_PROCESSING   | Initializes Paystack/LemonSqueezy/Flutterwave transaction. Returns payment URL or cashier-initiated charge. Webhook confirms, activates membership. |
+| FullProcessingStrategy  | payment_mode = FULL_PROCESSING   | Gateway-hosted redirect only — no direct card entry through the portal. LemonSqueezy is the reference implementation. Paystack is the secondary implementation for NGN deployments. Returns a hosted payment URL. Webhook confirms, activates membership. |
 
 # 6\. Auth Architecture
 

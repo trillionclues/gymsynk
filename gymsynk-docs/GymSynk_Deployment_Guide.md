@@ -51,11 +51,12 @@ The script will prompt for:
 
 - Your domain (e.g. gym.acmegym.com)
 - ACME email for Let's Encrypt TLS certificate
-- SMS provider choice (termii / twilio) and API key
 - Payment mode (CASH_ONLY / TRACK_AND_RECEIPT / FULL_PROCESSING)
-- Paystack or lemonsqueezy or Flutterwave secret key (only if FULL_PROCESSING selected)
+- LemonSqueezy or Paystack secret key (only if FULL_PROCESSING selected)
 
 It auto-generates: POSTGRES_PASSWORD, REDIS_PASSWORD, JWT_SECRET (32-byte random hex).
+
+> **Note:** SMS OTP delivery is not available in v1. Member authentication uses email OTP only (via Resend/SMTP). SMS support (Termii/Twilio) is planned for v1.5.
 
 ## Step 3 - Complete the Web Setup Wizard
 
@@ -88,9 +89,8 @@ After Step 6, setup_complete is set to true and the wizard is permanently disabl
 | REDIS_PASSWORD         | Yes          | Redis auth - auto-generated                               | (random)                |
 | JWT_SECRET             | Yes          | 32-byte hex - auto-generated                              | (random)                |
 | PAYMENT_MODE           | Yes          | One of: CASH_ONLY \| TRACK_AND_RECEIPT \| FULL_PROCESSING | CASH_ONLY               |
-| PAYSTACK_SECRET_KEY    | Conditional  | Required if PAYMENT_MODE=FULL_PROCESSING                  | sk_live_...             |
-| FLUTTERWAVE_SECRET_KEY | Conditional  | Alternative to Paystack                                   | FLWSECK\_...            |
-| LEMONSQUEEZY_SECRET_KEY | Conditional  | Alternative to Paystack                                  | LSQSECK\_...            |
+| PAYSTACK_SECRET_KEY    | Conditional  | Required if PAYMENT_MODE=FULL_PROCESSING and using Paystack  | sk_live_...             |
+| LEMONSQUEEZY_SECRET_KEY | Conditional  | Required if PAYMENT_MODE=FULL_PROCESSING and using LemonSqueezy | LSQSECK\_...         |
 | SMTP_HOST              | Optional     | For receipt emails and OTP emails                         | smtp.resend.com         |
 | SMTP_PORT              | Optional     | SMTP port                                                 | 465                     |
 | SMTP_USERNAME          | Optional     | SMTP auth username                                        | resend                  |

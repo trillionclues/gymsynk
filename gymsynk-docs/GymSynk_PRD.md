@@ -113,7 +113,7 @@ Three modes, selected at setup and changeable from admin settings. Implemented a
 | ----------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
 | CASH_ONLY         | Cashier logs payment manually. No processing.                                                    | Amount, method, date, cashier ID                     |
 | TRACK_AND_RECEIPT | Log payment + auto-generate PDF receipt via iText on-demand. Receipt is **streamed as HTTP response, never stored on disk**. Email to member if email on file. | All of above + receipt_number |
-| FULL_PROCESSING   | Paystack or or Lemonsqueezy Flutterwave integration. Payment link or cashier-initiated charge. Webhook confirms. | All of above + external_ref + gateway transaction ID |
+| FULL_PROCESSING   | Gateway-hosted redirect only — no direct card entry through the portal. LemonSqueezy is the reference implementation (existing integration reused from Mockline). Paystack is the secondary implementation for the NGN market. Payment link sent to member or displayed for cashier. Webhook confirms. | All of above + external_ref + gateway transaction ID |
 
 Money amounts stored as DECIMAL(12,4) in minor units - avoids float precision issues for any currency. Default currency is NGN, configurable per organization.
 
@@ -208,17 +208,23 @@ There is no premium tier. All features - including multi-location UI, analytics,
 
 # 7\. Roadmap
 
-| **Feature**                                | **Phase** | **Status**                                  |
-| ------------------------------------------ | --------- | ------------------------------------------- |
-| Core check-in + cashier portal             | v1.0      | In spec                                     |
-| Member PWA + QR flow                       | v1.0      | In spec                                     |
-| Three payment modes                        | v1.0      | In spec                                     |
-| Admin analytics dashboard                  | v1.0      | In spec                                     |
-| Offline sync (IndexedDB + Background Sync) | v1.0      | In spec                                     |
-| FLOOR_STAFF role                           | v1.5      | Planned - schema ready                      |
-| Push notifications (plan expiry)           | v1.5      | Planned                                     |
-| Membership freeze/pause                    | v1.5      | Planned                                     |
-| Multi-location management UI               | v2.0      | Schema ready - UI deferred                  |
-| Class/session booking                      | v2.0      | Separate product surface                    |
-| Mobile native wrapper (Capacitor/TWA)      | v2.0      | PWA covers v1 use cases                     |
-| K8s Helm charts                            | v2.0      | Docker Compose is the primary deploy target |
+| **Feature**                                | **Phase** | **Status**                                         |
+| ------------------------------------------ | --------- | -------------------------------------------------- |
+| Core check-in + cashier portal             | v1.0      | In spec                                            |
+| Member PWA + QR flow                       | v1.0      | In spec                                            |
+| CASH_ONLY payment mode                     | v1.0      | In spec                                            |
+| First-run setup wizard + Docker stack      | v1.0      | In spec                                            |
+| TRACK_AND_RECEIPT payment mode             | v1.1      | Planned — strategy interface ready from v1.0       |
+| FULL_PROCESSING payment mode (LemonSqueezy / Paystack) | v1.1 | Planned — strategy interface ready from v1.0 |
+| Admin analytics dashboard                  | v1.1      | Planned                                            |
+| Staff management + audit log viewer        | v1.1      | Planned                                            |
+| CSV export (members, check-ins, payments)  | v1.1      | Planned                                            |
+| Offline sync (IndexedDB + Background Sync) | v1.1      | Planned                                            |
+| FLOOR_STAFF role                           | v1.5      | Planned — schema ready from v1.0                   |
+| Push notifications (plan expiry)           | v1.5      | Planned                                            |
+| Membership freeze/pause                    | v1.5      | Planned                                            |
+| SMS OTP delivery (Termii / Twilio)         | v1.5      | Planned — email-only in v1.0                       |
+| Multi-location management UI               | v2.0      | Schema ready — UI deferred                         |
+| Class/session booking                      | v2.0      | Separate product surface                           |
+| Mobile native wrapper (Capacitor/TWA)      | v2.0      | PWA covers v1/v1.5 use cases                       |
+| K8s Helm charts                            | v2.0      | Docker Compose is the primary deploy target        |

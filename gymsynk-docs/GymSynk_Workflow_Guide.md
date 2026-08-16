@@ -58,7 +58,7 @@ Step 3: Operating Hours
 Step 4: Payment Mode
   → CASH_ONLY       (log payments manually, no receipts)
   → TRACK_AND_RECEIPT (log + generate PDF receipt on-demand, email if member has email)
-  → FULL_PROCESSING  (Paystack or or LemonSqueezy Flutterwave gateway, enter API keys)
+  → FULL_PROCESSING  (LemonSqueezy or Paystack — gateway-hosted redirect only, enter API keys)
         │
         ▼
 Step 5: Membership Plans
@@ -442,20 +442,21 @@ Cashier selects plan → clicks "Collect Payment Online"
         │
         ▼
 API calls FullProcessingStrategy:
-  → Initialize Paystack/LemonSqueezy/Flutterwave transaction
-  → Return payment URL
+  → LemonSqueezy (reference) or Paystack (NGN) initializes transaction
+  → Returns hosted payment URL
         │
         ▼
 Option A — Member pays on their phone:
-  → Cashier sends payment link to member (via display or share)
-  → Member completes payment on gateway checkout
+  → Cashier shares payment link with member (via display or copy)
+  → Member completes payment on gateway's hosted checkout page
 
-Option B — Cashier-initiated:
-  → Cashier enters card/account details for member
-  → Charge initiated via gateway API
+Option B — Cashier opens link on portal device:
+  → Cashier opens the hosted payment URL on the desk tablet/browser
+  → Member provides payment details directly on the gateway's hosted page
+  → No card details ever pass through the GymSynk portal
         │
         ▼
-Gateway sends webhook → POST /api/v1/payments/webhook/paystack
+Gateway sends webhook → POST /api/v1/payments/webhook/{gateway}
   → API verifies webhook signature
   → Updates payment status to COMPLETED
   → Activates membership

@@ -317,7 +317,10 @@ CREATE TABLE audit_log (
     org_id      UUID NOT NULL REFERENCES organizations(id),
     actor_id    UUID REFERENCES users(id),
     action      VARCHAR(50) NOT NULL,
-                -- MEMBER_CREATED | PAYMENT_RECORDED | CHECK_IN | PLAN_MODIFIED | etc.
+                -- MEMBER_CREATED | PAYMENT_RECORDED | CHECK_IN | CHECK_IN_OVERRIDE
+                -- | PLAN_MODIFIED | MEMBERSHIP_RENEWED | MEMBER_UPDATED | STAFF_DEACTIVATED | etc.
+                -- OVERRIDE check-ins get their own CHECK_IN_OVERRIDE action so they are
+                -- independently filterable in the audit log UI without scanning check_in status.
     entity_type VARCHAR(50) NOT NULL,
     entity_id   UUID,
     old_value   JSONB,
@@ -486,7 +489,7 @@ public sealed interface PaymentStrategy
 |:-----|:------------|:---------|
 | CASH_ONLY | `payment_mode = CASH_ONLY` | Records amount, method, cashier. No receipt. |
 | TRACK_AND_RECEIPT | `payment_mode = TRACK_AND_RECEIPT` | Records payment + generates PDF receipt via iText on-demand (streamed, not stored). Emails receipt if member has email. |
-| FULL_PROCESSING | `payment_mode = FULL_PROCESSING` | Paystack or Flutterwave or LemonSqueezy. Returns payment link or cashier-initiated charge. Webhook confirms, activates membership. |
+| FULL_PROCESSING | `payment_mode = FULL_PROCESSING` | Gateway-hosted redirect only — no direct card entry through the portal. LemonSqueezy is the reference implementation (existing integration). Paystack is the secondary implementation (Nigerian market default). Returns a hosted payment URL; member or cashier opens the link. Webhook confirms, activates membership. |
 
 Money: `DECIMAL(12,4)` in minor units. Default currency: NGN (configurable per org, ISO 4217).
 
@@ -716,7 +719,7 @@ Wizard is permanently disabled once `setup_complete = true`. The `SetupGuardFilt
 - Smoke test on fresh VPS
 
 ### Phase 5 — Future Roadmap (Post-MVP)
-- Full payment processing (Paystack/Flutterwave/ LemonSqueezy gateway)
+- Full payment processing (LemonSqueezy / Paystack gateway)
 - Membership freeze/pause
 - Push notifications (web push for plan expiry)
 - FLOOR_STAFF role UI
@@ -752,9 +755,8 @@ Wizard is permanently disabled once `setup_complete = true`. The `SetupGuardFilt
 | `SMTP_USERNAME` | Optional | SMTP username | `resend` |
 | `SMTP_PASSWORD` | Optional | SMTP password / API key | — |
 | `PAYMENT_MODE` | Yes | CASH_ONLY \| TRACK_AND_RECEIPT \| FULL_PROCESSING | `CASH_ONLY` |
-| `PAYSTACK_SECRET_KEY` | Conditional | Required if `FULL_PROCESSING` | — |
-| `FLUTTERWAVE_SECRET_KEY` | Conditional | Alternative to Paystack | — |
-| `LEMONSQUEEZY_SECRET_KEY` | Conditional | Alternative to Paystack | — |
+| `PAYSTACK_SECRET_KEY` | Conditional | Required if `FULL_PROCESSING` + Paystack | — |
+| `LEMONSQUEEZY_SECRET_KEY` | Conditional | Required if `FULL_PROCESSING` + LemonSqueezy | — |
 | `SPRING_PROFILES_ACTIVE` | Auto | Set to `prod` by Compose | `prod` |
 
 > **Removed:** `STORAGE_PATH` — no file storage. No uploads directory. No MinIO.

@@ -8,7 +8,7 @@ For what has already shipped, see [CHANGELOG.md](./CHANGELOG.md).
 
 ## v1.0 — Core Platform _(in spec)_
 
-The foundational release. Everything needed to replace the "cashier knows everyone" manual verification model.
+The foundational release. Everything a gym needs to replace the "cashier knows everyone" model and run daily operations from day one. Deliberately scoped to the irreducible minimum — the features without which GymSynk is not useful at all.
 
 **Member management**
 - [ ] Member registration (cashier-side, multi-step form)
@@ -33,20 +33,15 @@ The foundational release. Everything needed to replace the "cashier knows everyo
 - [ ] 5-day expiry warning email (daily, org timezone)
 
 **Payment system**
-- [ ] CASH_ONLY mode — manual log, no receipt
-- [ ] TRACK_AND_RECEIPT mode — iText PDF on-demand, streamed, emailed
-- [ ] FULL_PROCESSING mode — Paystack / Flutterwave gateway, webhook confirmation
-- [ ] Strategy pattern — swap modes with config change, no code change
+- [ ] CASH_ONLY mode — manual log, no receipt (the only payment mode in v1.0)
+- [ ] Strategy pattern implemented — TRACK_AND_RECEIPT and FULL_PROCESSING plug in at v1.1 with no code changes to PaymentService
 
 **Staff portal (cashier + admin)**
 - [ ] Staff login (email + password, JWT, Redis refresh token)
 - [ ] Live check-in dashboard with today stats strip
 - [ ] Expiry alerts panel (7-day window)
 - [ ] QR scanner station (full-screen, tablet-friendly, auto-reset)
-- [ ] Admin analytics: attendance heatmap, revenue charts, member retention
-- [ ] Staff management: invite/deactivate cashiers
-- [ ] Full audit log (every mutation, actor, IP, before/after diff)
-- [ ] CSV export (members, check-ins, payments)
+- [ ] Member registration form + profile drawer + manual check-in
 
 **Member PWA**
 - [ ] OTP login (email, 6-digit code via Resend)
@@ -64,6 +59,24 @@ The foundational release. Everything needed to replace the "cashier knows everyo
 - [ ] Multi-stage production Dockerfiles (backend + frontend)
 - [ ] Testcontainers integration test suite
 - [ ] Playwright E2E suite
+
+---
+
+## v1.1 — Operational Completeness _(planned)_
+
+Features that make the system useful for gym owners who want financial records and operational visibility, but are not blockers for the core check-in workflow.
+
+**Payment modes**
+- [ ] TRACK_AND_RECEIPT mode — iText PDF receipt on-demand, streamed, emailed to member
+- [ ] FULL_PROCESSING mode — LemonSqueezy (reference) / Paystack (NGN), gateway-hosted redirect, webhook confirmation
+
+**Admin portal additions**
+- [ ] Admin analytics: attendance heatmap, revenue charts, member retention
+- [ ] Staff management: invite/deactivate cashiers
+- [ ] Full audit log viewer (every mutation, actor, IP, before/after diff)
+- [ ] CSV export (members, check-ins, payments)
+
+**Offline resilience**
 - [ ] Offline check-in sync (IndexedDB queue + Background Sync API)
 
 ---

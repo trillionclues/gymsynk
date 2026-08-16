@@ -216,7 +216,7 @@ Cashier can register a member, assign a plan, log a payment, and see them on the
 - Offline fallback: if QR token request fails (network error), show static member card: name + member number + plan status (from cache). Instruction text: 'Show this to the cashier for manual check-in.'
 - member/history/page.tsx: infinite scroll list of check-ins, grouped by date. Shows session (AM/PM), status badge, plan name.
 - member/profile/page.tsx: plan details, expiry date. Renewal CTA when within 5 days of expiry. **No photo upload — avatar is auto-generated from member's name initials via DiceBear.**
-- PWA manifest: name GymSynk, theme color #4F46E5(still debatable for now until we discuss themeing in detail), display standalone, icons at 192 and 512px.
+- PWA manifest: name GymSynk, theme color `#18181b` (near-black — clean and neutral, consistent with the minimal design system), display standalone, icons at 192 and 512px.
 - Serwist config: Cache First for app shell, Stale While Revalidate for member profile and check-in history, Network First for QR token generation.
 
 **Phase 3 Exit Criteria**
@@ -251,7 +251,7 @@ The setup wizard runs once - when the API has no organization record. After comp
 
 | **Decision**                 | **Choice**                 | **Rationale**                                                                                                                       |
 | ---------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Java vs Kotlin for backend   | Java 21                    | Records, virtual threads, and pattern matching land most modern Kotlin features in Java. Java has broader EU fintech hiring signal. |
+| Java vs Kotlin for backend   | Java 21 (Kotlin viable)    | Java 21 records, virtual threads, and pattern matching cover most modern Kotlin features. Java has broader hiring signal. **Kotlin is a fully supported alternative** — Spring Boot 3.4 has first-class Kotlin support, coroutines pair well with virtual threads for I/O-heavy workloads, and the codebase is small enough that migrating is low-risk. If you prefer Kotlin's conciseness and null-safety, use it — the package structure and all design decisions apply equally. |
 | Virtual threads vs Reactive  | Virtual threads (Loom)     | Check-in bursts are I/O-bound (Redis + Postgres). Virtual threads handle this without Reactor/WebFlux complexity.                   |
 | WebSocket vs SSE             | Spring WebSocket (STOMP)   | Bidirectional - cashier dashboard can also push overrides and commands. SSE would require a separate channel for commands.          |
 | Opaque QR tokens vs JWT QR   | Redis opaque tokens        | No PII decodable from QR image. GETDEL makes single-use atomic even under concurrent scans.                                         |
