@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: gymsynk-api
+  threads:
+    virtual:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate        # Flyway owns schema — Hibernate only validates
+    open-in-view: false
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

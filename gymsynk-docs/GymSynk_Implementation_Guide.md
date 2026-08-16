@@ -10,86 +10,93 @@ Phase-by-Phase Build Plan - GymSynk v1.0
 
 Version 1.0.0 | Engineering Playbook
 
-Spring Boot 3.4 • Java 21 • Next.js 15 • PostgreSQL 16
+Spring Boot 3.4 • Kotlin • Next.js 15 • PostgreSQL 16
 
 Generated: 9 June 2026
 
 # **1\. Repository Structure**
 
-GymSynk is a two-app monorepo. Backend and frontend are separate directories sharing a root docker-compose.yml and .env file.
+GymSynk is a pnpm workspace monorepo. Both the Kotlin/Spring Boot API and the Next.js frontend live under `apps/`, managed by a single root `pnpm-workspace.yaml`. Gradle runs inside `apps/api` — pnpm doesn't touch it directly, but having everything under one root means a single `git clone`, a single `.env`, and a single `docker-compose.yml`.
 
+```
 gymsynk/
-
-├── backend/ Spring Boot 3.4 + Java 21
-
-│ ├── build.gradle.kts
-
-│ ├── settings.gradle.kts
-
-│ ├── Dockerfile
-
-│ └── src/main/
-
-│ ├── java/com/gymsynk/ (domain packages)
-
-│ └── resources/
-
-│ ├── application.yml
-
-│ ├── application-dev.yml
-
-│ ├── application-prod.yml
-
-│ └── db/migration/ V1*\_...sql through V8*\_...sql
-
-├── frontend/ Next.js 15 + Serwist PWA
-
-│ ├── package.json
-
-│ ├── next.config.ts
-
-│ ├── Dockerfile
-
-│ └── src/app/ (dashboard + member route groups)
-
-├── docker-compose.yml Production Compose
-
-├── docker-compose.dev.yml Dev Compose (DB + Redis only)
-
+├── apps/
+│   ├── api/                         Spring Boot 3.4 + Kotlin
+│   │   ├── build.gradle.kts
+│   │   ├── settings.gradle.kts
+│   │   ├── gradlew
+│   │   ├── Dockerfile
+│   │   └── src/main/
+│   │       ├── kotlin/com/gymsynk/  (domain packages)
+│   │       └── resources/
+│   │           ├── application.yml
+│   │           ├── application-dev.yml
+│   │           ├── application-prod.yml
+│   │           └── db/migration/    V1__...sql → V10__...sql
+│   └── web/                         Next.js 15 + Serwist PWA
+│       ├── package.json
+│       ├── next.config.ts
+│       ├── Dockerfile
+│       └── src/app/                 (dashboard + member route groups)
+├── package.json                     Root — workspaces, shared dev scripts
+├── pnpm-workspace.yaml              Declares apps/* as workspace packages
+├── docker-compose.yml               Production Compose
+├── docker-compose.dev.yml           Dev Compose (DB + Redis only)
 ├── .env.example
-
-├── setup-cli.sh Interactive first-run setup script
-
+├── setup-cli.sh                     Interactive first-run setup script
 └── README.md
+```
+
+Root `pnpm-workspace.yaml`:
+```yaml
+packages:
+  - 'apps/web'
+```
+
+Root `package.json` (scripts only — no dependencies at root):
+```json
+{
+  "name": "gymsynk",
+  "private": true,
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
+    "test:web": "pnpm --filter web test",
+    "test:e2e": "pnpm --filter web exec playwright test"
+  }
+}
+```
+
+> The Gradle API project (`apps/api`) is not a pnpm package — Gradle manages its own dependencies. It lives in `apps/api` purely for co-location. You run it with `./gradlew` from inside `apps/api`, or via the helper scripts in the root `package.json` if you add them.
 
 # **2\. Phase 0 - Project Foundation (Days 1-2)**
 
 Set up both projects, shared infrastructure, and local dev environment. No feature code yet.
 
-## **Backend Scaffold**
+## **Backend Scaffold (apps/api)**
 
-- Generate Spring Boot project via start.spring.io or Spring Initializr CLI. Dependencies: Spring Web, Spring Security, Spring Data JPA, Spring WebSocket, Flyway, PostgreSQL driver, Spring Data Redis, Lombok, SpringDoc OpenAPI, Validation.
-- Configure Gradle Kotlin DSL: set Java 21 toolchain, enable virtual threads in application.yml (spring.threads.virtual.enabled: true).
-- Write application-dev.yml: point to local Docker DB and Redis from docker-compose.dev.yml.
-- Write V1 through V8 Flyway migrations - all tables in dependency order. Run once to verify schema creation.
-- Write DataSeeder @Component (runs on @EventListener(ApplicationReadyEvent)): creates org 'GymSynk Demo', one location, one ADMIN user, one CASHIER user, 20 MEMBER users with varied plan states (active, expired, expiring-soon). Only runs when spring.profiles.active=dev.
+- Generate Spring Boot project via [start.spring.io](https://start.spring.io): select **Kotlin**, Gradle - Kotlin DSL. Dependencies: Spring Web, Spring Security, Spring Data JPA, Spring WebSocket, Flyway, PostgreSQL driver, Spring Data Redis, SpringDoc OpenAPI, Validation. (No Lombok — Kotlin data classes replace it.)
+- In `build.gradle.kts`: set JVM toolchain to Java 21, enable virtual threads in `application.yml` (`spring.threads.virtual.enabled: true`), add JJWT and ZXing dependencies.
+- Write `application-dev.yml`: point to local Docker DB (`localhost:5432`) and Redis (`localhost:6379`) from `docker-compose.dev.yml`.
+- Write Flyway migrations V1 through V10 — all tables in dependency order. Run once to verify schema creation.
+- Write `DataSeeder` component (annotated `@Component`, runs on `ApplicationReadyEvent`): creates org `GymSynk Demo`, one location, one ADMIN user, one CASHIER user, 20 MEMBER users with varied plan states (active, expired, expiring-soon). Gate with `@Profile("dev")`.
 
-## **Frontend Scaffold**
+## **Frontend Scaffold (apps/web)**
 
-- Init Next.js 15 app: npx create-next-app@latest frontend --ts --tailwind --app --src-dir
-- Install: shadcn/ui (init), Serwist, @zxing/browser, recharts, zustand, react-hook-form, zod, axios, date-fns.
-- Configure Serwist in next.config.ts - app shell caching, Stale While Revalidate for API routes.
-- Create /src/lib/api.ts - axios instance with base URL from NEXT_PUBLIC_API_URL, JWT interceptor (attaches access token from store, refreshes on 401).
-- Create /src/stores/authStore.ts - Zustand store for user session, role, access token.
+- From the repo root: `pnpm create next-app@latest apps/web --ts --tailwind --app --src-dir`
+- From `apps/web`: install dependencies — `pnpm add` shadcn/ui (then `pnpm dlx shadcn@latest init`), `next-pwa` via Serwist, `@zxing/browser`, `recharts`, `zustand`, `react-hook-form`, `zod`, `axios`, `date-fns`.
+- Configure Serwist in `next.config.ts` — app shell caching, Stale While Revalidate for API routes.
+- Create `src/lib/api.ts` — axios instance with base URL from `NEXT_PUBLIC_API_URL`, JWT interceptor (attaches access token from store, refreshes on 401).
+- Create `src/stores/authStore.ts` — Zustand store for user session, role, access token.
 
 ## **Docker Dev Environment**
 
-- Write docker-compose.dev.yml - only postgres:16-alpine, redis:7-alpine. Expose ports to localhost. No app containers in dev.
-- Verify: docker compose -f docker-compose.dev.yml up -d → Flyway migrations run → Drizzle Studio equivalent (DBeaver or psql) shows all 10 tables.
+- Write `docker-compose.dev.yml` — only `postgres:16-alpine` and `redis:7-alpine`. Expose ports 5432 and 6379 to localhost. No app containers in dev.
+- Verify: `docker compose -f docker-compose.dev.yml up -d` → Flyway migrations run on API startup → `psql` or DBeaver shows all 10 tables with seed data.
 
 **Phase 0 Exit Criteria**
 
-./gradlew bootRun starts API on :8080, hits GET /api/v1/actuator/health → UP. pnpm dev starts frontend on :3000. Seed data visible in DB. Both processes running simultaneously with no port conflicts.
+`./gradlew bootRun` (from `apps/api`) starts API on `:8080`, `GET /api/v1/actuator/health` returns `{"status":"UP"}`. `pnpm dev:web` (from repo root) starts frontend on `:3000`. Seed data visible in DB. Both processes run simultaneously with no port conflicts.
 
 # **3\. Phase 1 - Backend API Core (Days 3-10)**
 
@@ -106,9 +113,9 @@ Set up both projects, shared infrastructure, and local dev environment. No featu
 
 ## **3.2 Setup & Organization**
 
-- Write SetupService.isSetupComplete(): query organizations table for any row. If empty, redirect frontend to /setup.
-- POST /api/v1/setup (accessible only when setup_complete=false): create organization, first location, operating_hours, admin user, initial plans from SetupRequest body.
-- Write setup request Zod schema (frontend) and Java record (backend) with full validation.
+- Write `SetupService.isSetupComplete()`: query organizations table for any row. If empty, redirect frontend to `/setup`.
+- `POST /api/v1/setup` (accessible only when `setup_complete=false`): create organization, first location, operating_hours, admin user, initial plans from `SetupRequest` body.
+- Write setup request Zod schema (frontend) and Kotlin data class (backend) with `@Valid` constraints.
 
 ## **3.3 Member Management**
 
@@ -119,19 +126,19 @@ Set up both projects, shared infrastructure, and local dev environment. No featu
 
 ## **3.4 Plans & Memberships**
 
-- CRUD for MembershipPlan: admin-only creates/updates. GET is staff-accessible.
-- POST /api/v1/memberships: validate plan exists for location, compute end_date from plan.durationType + durationValue + start_date using Java time API, save Membership, optionally call PaymentService.
-- MembershipExpiryScheduler @Scheduled(cron='0 0 * * * *'): query memberships WHERE status=ACTIVE AND end_date < NOW(). Batch update to EXPIRED. Log each transition to audit_log.
-- ExpiryWarningEmailJob @Scheduled(cron='0 0 8 * * *', tz=orgTz): query memberships WHERE status=ACTIVE AND end_date = LocalDate.now() + 5 days. Send expiry warning email via JavaMailSender. This aligns with the 5-day renewal CTA displayed in the member PWA.
+- CRUD for `MembershipPlan`: admin-only creates/updates. GET is staff-accessible.
+- `POST /api/v1/memberships`: validate plan exists for location, compute `end_date` from `plan.durationType + durationValue + start_date` using `java.time` API (fully usable from Kotlin), save Membership, optionally call PaymentService.
+- `MembershipExpiryScheduler` (`@Scheduled(cron = "0 0 * * * *")`): query memberships WHERE status=ACTIVE AND end_date < NOW(). Batch update to EXPIRED. Log each transition to audit_log.
+- `ExpiryWarningEmailJob` (`@Scheduled(cron = "0 0 8 * * *", zone = orgTz)`): query memberships WHERE status=ACTIVE AND end_date = LocalDate.now() + 5 days. Send expiry warning email via `JavaMailSender`. Aligns with the 5-day renewal CTA in the member PWA.
 
 ## **3.5 Check-In Engine**
 
-- Write QrTokenService: generateToken() - SecureRandom.nextBytes(32) → hex string, SET in Redis qr:{token}:{userId} TTL 120s. validateAndConsume(token) - GETDEL, return Optional&lt;UUID&gt;.
-- Write CheckInService.validateAndRecord(): full 10-step pipeline from Design doc section 4.2. All within @Transactional.
-- POST /api/v1/checkin/qr-token (MEMBER role): call QrTokenService, generate QR PNG via QrCodeGenerator (ZXing), return base64.
-- POST /api/v1/checkin/validate (CASHIER/ADMIN role): receive QR string from scanner, call CheckInService.validateAndRecord().
-- POST /api/v1/checkin/manual (CASHIER/ADMIN role): skip QR decode, look up member by ID or member_number, run validation from step 3 onward.
-- POST /api/v1/checkin/manual with X-Override: true header: bypass validation steps 5-7, write with override fields.
+- Write `QrTokenService`: `generateToken()` — `SecureRandom.nextBytes(32)` → hex string, `SET` in Redis `qr:{token}:{userId}` TTL 120s. `validateAndConsume(token)` — `GETDEL`, return `UUID?`.
+- Write `CheckInService.validateAndRecord()`: full 10-step pipeline from System Design section 4.2. All within `@Transactional`.
+- `POST /api/v1/checkin/qr-token` (MEMBER role): call `QrTokenService`, generate QR PNG via `QrCodeGenerator` (ZXing), return base64.
+- `POST /api/v1/checkin/validate` (CASHIER/ADMIN role): receive QR string from scanner, call `CheckInService.validateAndRecord()`.
+- `POST /api/v1/checkin/manual` (CASHIER/ADMIN role): skip QR decode, look up member by ID or member_number, run validation from step 3 onward.
+- `POST /api/v1/checkin/manual` with `X-Override: true` header: bypass validation steps 5–7, write with override fields.
 
 ## **3.6 WebSocket Setup**
 
@@ -141,10 +148,10 @@ Set up both projects, shared infrastructure, and local dev environment. No featu
 
 ## **3.7 Payment Service**
 
-- Implement CashOnlyStrategy: record Payment entity, return PaymentResult.
-- Implement TrackAndReceiptStrategy: extends cash, calls ReceiptGenerator (iText PDF) to generate receipt **on-demand in memory (byte[]), returned as HTTP response, never written to disk**. Emails PDF as attachment via JavaMailSender if member.email is present.
-- Implement FullProcessingStrategy: call Paystack SDK initializeTransaction, return payment URL. Write webhook handler POST /api/v1/payments/webhook/paystack.
-- PaymentService.processPayment(): select strategy based on org.paymentMode, delegate, activate membership on success.
+- Implement `CashOnlyStrategy`: record Payment entity, return `PaymentResult`.
+- Implement `TrackAndReceiptStrategy`: extends cash, calls `ReceiptGenerator` (iText PDF) to generate receipt **on-demand in memory (`ByteArray`), returned as HTTP response, never written to disk**. Emails PDF as attachment via `JavaMailSender` if `member.email` is present.
+- Implement `FullProcessingStrategy`: call LemonSqueezy SDK (reference) or Paystack API (NGN). Returns hosted payment URL — no card data passes through GymSynk. Write webhook handler `POST /api/v1/payments/webhook/{gateway}`.
+- `PaymentService.processPayment()`: select strategy based on `org.paymentMode`, delegate, activate membership on success.
 
 ## **3.8 Analytics**
 
@@ -243,7 +250,7 @@ The setup wizard runs once - when the API has no organization record. After comp
 - E2E tests: Playwright - register member, assign plan, generate QR, POST check-in API, verify dashboard update.
 - Rate limiting: Bucket4j on OTP request and login endpoints (Redis-backed for multi-instance support).
 - Input validation: ensure all controllers have @Valid on request bodies, GlobalExceptionHandler returns structured ErrorResponse for MethodArgumentNotValidException.
-- Production Dockerfiles: multi-stage backend (gradle:8-jdk21 → eclipse-temurin:21-jre-alpine). Multi-stage frontend (node:20 for build → node:20-alpine for serve).
+- Production Dockerfiles: multi-stage backend (`gradle:8-jdk21 → eclipse-temurin:21-jre-alpine`, builds Kotlin/Gradle). Multi-stage frontend (`node:20` for pnpm build → `node:20-alpine` for serve).
 - Database query review: add EXPLAIN ANALYZE on the 5 hottest queries (member search, today's check-ins, active memberships, analytics aggregation, expiry scan). Add missing indexes.
 - Smoke test: fresh VPS, run setup-cli.sh, complete wizard, register member, perform QR check-in, verify WebSocket update on cashier dashboard.
 
@@ -251,20 +258,20 @@ The setup wizard runs once - when the API has no organization record. After comp
 
 | **Decision**                 | **Choice**                 | **Rationale**                                                                                                                       |
 | ---------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Java vs Kotlin for backend   | Java 21 (Kotlin viable)    | Java 21 records, virtual threads, and pattern matching cover most modern Kotlin features. Java has broader hiring signal. **Kotlin is a fully supported alternative** — Spring Boot 3.4 has first-class Kotlin support, coroutines pair well with virtual threads for I/O-heavy workloads, and the codebase is small enough that migrating is low-risk. If you prefer Kotlin's conciseness and null-safety, use it — the package structure and all design decisions apply equally. |
+| Kotlin vs Java for backend   | **Kotlin**                 | Null safety, data classes replace Java records with less boilerplate, sealed interfaces for payment strategy, concise Spring Boot DSL. Spring Boot 3.4 has first-class Kotlin support. Same JVM 21 + virtual threads underneath. |
 | Virtual threads vs Reactive  | Virtual threads (Loom)     | Check-in bursts are I/O-bound (Redis + Postgres). Virtual threads handle this without Reactor/WebFlux complexity.                   |
-| WebSocket vs SSE             | Spring WebSocket (STOMP)   | Bidirectional - cashier dashboard can also push overrides and commands. SSE would require a separate channel for commands.          |
-| Opaque QR tokens vs JWT QR   | Redis opaque tokens        | No PII decodable from QR image. GETDEL makes single-use atomic even under concurrent scans.                                         |
-| Hibernate vs jOOQ            | Hibernate 6 + JPA          | Simpler for the team. JPQL covers all queries. Native SQL for analytics aggregations where needed.                                  |
-| Nginx vs Traefik             | Traefik (Nginx documented) | Standalone Traefik v3 reverse proxy with auto TLS. Nginx config included in /docs/nginx.conf for operators who prefer it.           |
+| WebSocket vs SSE             | Spring WebSocket (STOMP)   | Bidirectional — cashier dashboard can also push overrides and commands. SSE would require a separate channel for commands.          |
+| Opaque QR tokens vs JWT QR   | Redis opaque tokens        | No PII decodable from QR image. GETDEL makes single-use atomic even under concurrent scans.                                        |
+| Hibernate vs jOOQ            | Spring Data JPA (Hibernate)| Simpler for the team. JPQL covers all queries. Native SQL for analytics aggregations where needed.                                  |
+| Nginx vs Traefik             | Traefik (Nginx documented) | Standalone Traefik v3 reverse proxy with auto TLS. Nginx config included in `/docs/nginx.conf` for operators who prefer it.        |
 | Flyway vs Liquibase          | Flyway                     | SQL-first, simpler mental model, better Spring Boot auto-configuration, sufficient for this schema size.                            |
-| iText vs Jasper for receipts | iText Community (AGPL)     | Matches GymSynk license. PDF generation in-process - no extra service. Switch to OpenPDF if license is a concern.                   |
+| iText vs Jasper for receipts | iText Community (AGPL)     | Matches GymSynk license. PDF generation in-process — no extra service. Switch to OpenPDF if license is a concern.                  |
 
 # **9\. Testing Strategy**
 
 | **Layer**          | **Tool**                         | **Coverage Focus**                                                                                             |
 | ------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Unit               | JUnit 5 + Mockito                | QR token generation/validation, session computation logic, plan expiry calculation, payment strategy selection |
+| Unit               | JUnit 5 + MockK (Kotlin)         | QR token generation/validation, session computation logic, plan expiry calculation, payment strategy selection |
 | Integration        | Testcontainers + @SpringBootTest | Full check-in pipeline, auth token lifecycle, offline sync reconciliation, Flyway migration correctness        |
 | Frontend Component | React Testing Library + Vitest   | CheckInFeed WebSocket updates, QR display/expiry countdown, registration form validation                       |
 | E2E                | Playwright                       | Register → pay → QR scan → dashboard update. Setup wizard complete flow. Offline member card display.          |

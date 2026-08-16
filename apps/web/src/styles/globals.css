@@ -1,0 +1,178 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* ── Light mode tokens */
+:root.light {
+  --color-bg:               #f9f9f9;
+  --color-surface:          #ffffff;
+  --color-surface-2:        #f4f4f5;
+  --color-surface-3:        #eeeeef;
+  --color-border:           #e4e4e7;
+  --color-border-strong:    #d1d1d6;
+  --color-border-highlight: rgba(113, 113, 122, 0.20);
+  --color-primary:          #18181b;
+  --color-primary-hover:    #09090b;
+  --color-primary-muted:    rgba(24, 24, 27, 0.06);
+  --color-primary-muted-hover: rgba(24, 24, 27, 0.10);
+  --color-accent:           #a16207;
+  --color-accent-hover:     #854d0e;
+  --color-accent-muted:     rgba(161, 98, 7, 0.08);
+  --color-accent-muted-hover: rgba(161, 98, 7, 0.14);
+  --color-text:             #18181b;
+  --color-text-strong:      #09090b;
+  --color-text-muted:       #52525b;
+  --color-text-subtle:      #a1a1aa;
+  --color-text-on-primary:  #ffffff;
+  --color-text-on-accent:   #ffffff;
+  --color-nav-text:         #71717a;
+  --color-nav-text-active:  #09090b;
+  --color-nav-bg-scrolled:  rgba(249, 249, 249, 0.90);
+  --color-status-valid:         #16a34a;
+  --color-status-valid-bg:      rgba(22, 163, 74, 0.07);
+  --color-status-expired:       #b91c1c;
+  --color-status-expired-bg:    rgba(185, 28, 28, 0.07);
+  --color-status-override:      #b45309;
+  --color-status-override-bg:   rgba(180, 83, 9, 0.07);
+  --color-status-wrong:         #71717a;
+  --color-status-wrong-bg:      rgba(113, 113, 122, 0.07);
+  --color-status-duplicate:     #6d28d9;
+  --color-status-duplicate-bg:  rgba(109, 40, 217, 0.07);
+  --color-plan-daily:       #92400e;
+  --color-plan-daily-bg:    rgba(146, 64, 14, 0.07);
+  --color-plan-weekly:      #1d4ed8;
+  --color-plan-weekly-bg:   rgba(29, 78, 216, 0.07);
+  --color-plan-monthly:     #166534;
+  --color-plan-monthly-bg:  rgba(22, 101, 52, 0.07);
+  --color-plan-custom:      #5b21b6;
+  --color-plan-custom-bg:   rgba(91, 33, 182, 0.07);
+  --color-session-morning:  #a16207;
+  --color-session-morning-bg: rgba(161, 98, 7, 0.07);
+  --color-session-evening:  #3f3f46;
+  --color-session-evening-bg: rgba(63, 63, 70, 0.07);
+  --color-shadow:           rgba(0, 0, 0, 0.06);
+  --color-shadow-md:        rgba(0, 0, 0, 0.10);
+  --color-grid-line:        rgba(0, 0, 0, 0.035);
+  --color-logo-line:        #09090b;
+  --color-overlay:          rgba(0, 0, 0, 0.35);
+}
+
+/* ── Dark mode tokens ───────────────────────────────────── */
+:root.dark {
+  --color-bg:               #0a0a0b;
+  --color-surface:          #111113;
+  --color-surface-2:        #18181b;
+  --color-surface-3:        #1e1e21;
+  --color-border:           #27272a;
+  --color-border-strong:    #3f3f46;
+  --color-border-highlight: rgba(161, 161, 170, 0.15);
+  --color-primary:          #fafafa;
+  --color-primary-hover:    #e4e4e7;
+  --color-primary-muted:    rgba(250, 250, 250, 0.07);
+  --color-primary-muted-hover: rgba(250, 250, 250, 0.12);
+  --color-accent:           #ca8a04;
+  --color-accent-hover:     #a16207;
+  --color-accent-muted:     rgba(202, 138, 4, 0.10);
+  --color-accent-muted-hover: rgba(202, 138, 4, 0.18);
+  --color-text:             #d4d4d8;
+  --color-text-strong:      #fafafa;
+  --color-text-muted:       #71717a;
+  --color-text-subtle:      #52525b;
+  --color-text-on-primary:  #09090b;
+  --color-text-on-accent:   #09090b;
+  --color-nav-text:         #52525b;
+  --color-nav-text-active:  #fafafa;
+  --color-nav-bg-scrolled:  rgba(10, 10, 11, 0.90);
+  --color-status-valid:         #4ade80;
+  --color-status-valid-bg:      rgba(74, 222, 128, 0.08);
+  --color-status-expired:       #f87171;
+  --color-status-expired-bg:    rgba(248, 113, 113, 0.08);
+  --color-status-override:      #fbbf24;
+  --color-status-override-bg:   rgba(251, 191, 36, 0.08);
+  --color-status-wrong:         #52525b;
+  --color-status-wrong-bg:      rgba(82, 82, 91, 0.08);
+  --color-status-duplicate:     #a78bfa;
+  --color-status-duplicate-bg:  rgba(167, 139, 250, 0.08);
+  --color-plan-daily:       #fbbf24;
+  --color-plan-daily-bg:    rgba(251, 191, 36, 0.08);
+  --color-plan-weekly:      #60a5fa;
+  --color-plan-weekly-bg:   rgba(96, 165, 250, 0.08);
+  --color-plan-monthly:     #4ade80;
+  --color-plan-monthly-bg:  rgba(74, 222, 128, 0.08);
+  --color-plan-custom:      #a78bfa;
+  --color-plan-custom-bg:   rgba(167, 139, 250, 0.08);
+  --color-session-morning:  #ca8a04;
+  --color-session-morning-bg: rgba(202, 138, 4, 0.10);
+  --color-session-evening:  #71717a;
+  --color-session-evening-bg: rgba(113, 113, 122, 0.10);
+  --color-shadow:           rgba(0, 0, 0, 0.50);
+  --color-shadow-md:        rgba(0, 0, 0, 0.70);
+  --color-grid-line:        rgba(255, 255, 255, 0.025);
+  --color-logo-line:        #fafafa;
+  --color-overlay:          rgba(0, 0, 0, 0.65);
+}
+
+/* ── Base styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, sans-serif);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Background grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--color-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All page content renders above the grid */
+#__next,
+main,
+.layout-root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Focus styles (accent ring — not primary, keeps buttons clean) */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-subtle);
+}

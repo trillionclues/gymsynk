@@ -10,7 +10,7 @@ Technical Reference for GymSynk v1.0
 
 Version 1.0.0 | Internal Engineering Reference
 
-Spring Boot 3.4 • Java 21 • Next.js 15 • PostgreSQL 16
+Spring Boot 3.4 • Kotlin • Next.js 15 • PostgreSQL 16
 
 Generated: 9 June 2026
 
@@ -20,12 +20,12 @@ GymSynk uses a two-process, service-oriented architecture designed for single-co
 
 **Architecture Principle**
 
-Boring, operational tech. Spring Boot and Next.js are mature, well-documented, and trivially self-hostable. Java 21 virtual threads handle the I/O-bound check-in burst problem without Reactive programming complexity. Everything runs on a single 2-core VPS for most gyms - scale out only when the bottleneck is proven.
+Boring, operational tech. Spring Boot + Kotlin and Next.js are mature, well-documented, and trivially self-hostable. Virtual threads handle the I/O-bound check-in burst problem without Reactive programming complexity. Everything runs on a single 2-core VPS for most gyms — scale out only when the bottleneck is proven.
 
 | **Layer**        | **Technology**            | **Version**     | **Rationale**                                                                   |
 | ---------------- | ------------------------- | --------------- | ------------------------------------------------------------------------------- |
-| API Server       | Spring Boot               | 3.4             | Virtual threads, mature ecosystem, strong Java portfolio signal                 |
-| Language         | Java                      | 21 (LTS)        | Virtual threads (Project Loom), records for DTOs, pattern matching              |
+| API Server       | Spring Boot               | 3.4             | Virtual threads, mature ecosystem, Kotlin-first configuration                   |
+| Language         | Kotlin                    | 1.9 (JVM 21)    | Null safety, data classes for DTOs, coroutine-friendly, concise Spring Boot DSL |
 | Database         | PostgreSQL                | 16              | JSONB for config, excellent indexing, proven at scale, ACID check-in writes     |
 | ORM / Migrations | Hibernate 6 + Flyway      | current         | JPA for queries, Flyway for version-controlled schema migrations                |
 | Cache / Queues   | Redis                     | 7               | QR token store (TTL), refresh token whitelist, WebSocket pub/sub, rate limiting |
@@ -39,8 +39,8 @@ Boring, operational tech. Spring Boot and Next.js are mature, well-documented, a
 | PWA              | Serwist                   | current         | Service worker, offline caching, Background Sync, install prompt                |
 | File Storage     | None                      | N/A             | No file storage layer. No uploads. No MinIO. Avatars are client-side generated. PDF receipts are streamed on-demand, never stored. |
 | Reverse Proxy    | Traefik                   | v3              | Standalone auto TLS via ACME, Docker label routing, zero-downtime deploys       |
-| Build (backend)  | Gradle (Kotlin DSL)       | 8.x             | Faster than Maven, modern DSL, better dependency management                     |
-| Build (frontend) | pnpm + Turborepo          | current         | Fast installs, workspace support if monorepo grows                              |
+| Build (backend)  | Gradle (Kotlin DSL)       | 8.x             | Kotlin DSL is the native build language — same language as the app itself       |
+| Build (frontend) | pnpm workspaces           | current         | Single root pnpm managing both `apps/api` (Gradle) and `apps/web` (Next.js)    |
 
 # 2\. System Components
 
@@ -50,7 +50,7 @@ Domain-driven package structure. Each feature is a self-contained module: contro
 
 com.gymsynk/
 
-├── GymSynkApplication.java
+├── GymSynkApplication.kt
 
 ├── config/ SecurityConfig, WebSocketConfig, RedisConfig, OpenApiConfig, CorsConfig
 
@@ -88,7 +88,7 @@ com.gymsynk/
 
 ├── payment/ PaymentController, PaymentService
 
-│ strategy: PaymentStrategy (sealed), CashOnly, TrackAndReceipt, FullProcessing
+│ strategy: PaymentStrategy (sealed interface), CashOnly, TrackAndReceipt, FullProcessing
 
 │ entity: Payment
 
@@ -96,7 +96,7 @@ com.gymsynk/
 
 dto: AttendanceStats, RevenueReport, HeatmapData
 
-Flyway migrations live at src/main/resources/db/migration/ - V1 through V8 covering all tables in dependency order.
+Flyway migrations live at src/main/resources/db/migration/ — V1 through V10 covering all tables in dependency order.
 
 ## 2.2 Next.js Frontend - Route Structure
 
@@ -216,18 +216,13 @@ WebSocket connections are per-server-instance. For horizontal scaling, the Redis
 
 The PaymentService selects a strategy at runtime based on the organization's `payment_mode` setting. Adding a new gateway requires implementing one interface — no changes to PaymentService or controller.
 
-public sealed interface PaymentStrategy
-
-permits CashOnlyStrategy, TrackAndReceiptStrategy, FullProcessingStrategy {
-
-PaymentResult processPayment(PaymentRequest request);
-
-Optional&lt;byte\[\]&gt; generateReceipt(Payment payment);
-Optional<byte[]> generateReceipt(Payment payment);
-
-boolean requiresExternalConfirmation();
-
+```kotlin
+sealed interface PaymentStrategy {
+    fun processPayment(request: PaymentRequest): PaymentResult
+    fun generateReceipt(payment: Payment): ByteArray?  // iText in-memory; never stored
+    fun requiresExternalConfirmation(): Boolean
 }
+```
 
 | Strategy            | Triggered By                 | Behavior                                                                                                                           |
 | ----------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -273,8 +268,8 @@ Offline check-in sync: IndexedDB stores pending check-ins with timestamps. Backg
 
 | **Service** | **Image**                 | **Internal Port** | **Notes**                                                                            |
 | ----------- | ------------------------- | ----------------- | ------------------------------------------------------------------------------------ |
-| api         | gymsynk/api (Spring Boot) | 8080              | Built from backend/Dockerfile. Multi-stage: Gradle build → JRE 21 slim image.        |
-| web         | gymsynk/web (Next.js)     | 3000              | Built from frontend/Dockerfile. Multi-stage: pnpm build → node:slim.                 |
+| api         | gymsynk/api (Spring Boot) | 8080              | Built from `apps/api/Dockerfile`. Multi-stage: Gradle build (Kotlin) → eclipse-temurin:21-jre-alpine. |
+| web         | gymsynk/web (Next.js)     | 3000              | Built from `apps/web/Dockerfile`. Multi-stage: pnpm build → node:slim.          |
 | db          | postgres:16-alpine        | 5432              | Primary data store. Volume: pgdata.                                                  |
 | redis       | redis:7-alpine            | 6379              | QR tokens, sessions, pub/sub. Volume: redisdata. Persistence: AOF enabled.           |
 | traefik     | traefik:v3                | 80/443 (public)   | Auto TLS via ACME. Routes by Host header. Docker label-based config.                 |

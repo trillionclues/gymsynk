@@ -6,7 +6,7 @@
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/projects/jdk/21/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9-purple.svg)](https://kotlinlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 
 [Deploy in 5 minutes](#quick-start) · [Contributing](./CONTRIBUTING.md)
@@ -122,7 +122,37 @@ After step 6 the wizard is permanently disabled and you're redirected to the cas
 | Dashboard first paint | < 2s |
 | Concurrent check-ins | 50+ simultaneous |
 
-Java 21 virtual threads handle I/O-bound check-in bursts without thread pool exhaustion. The entire stack runs comfortably on a 1 vCPU / 2 GiB VPS.
+Kotlin virtual threads handle I/O-bound check-in bursts without thread pool exhaustion. The entire stack runs comfortably on a 1 vCPU / 2 GiB VPS.
+
+---
+
+## Local Development
+
+**Prerequisites:** Java 21, Node.js 20+, pnpm, Docker + Compose v2.
+
+```bash
+# 1. Clone
+git clone https://github.com/trillionclues/gymsynk.git
+cd gymsynk
+
+# 2. Install frontend dependencies (from repo root)
+pnpm install
+
+# 3. Start Postgres + Redis only
+docker compose -f docker-compose.dev.yml up -d
+
+# 4. Start the Kotlin API (seeds demo data on first run)
+cd apps/api
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# 5. In a separate terminal, start the Next.js frontend
+cd ../..
+pnpm dev:web
+```
+
+API on `:8080` · Frontend on `:3000` · Swagger UI at `http://localhost:8080/api/v1/swagger-ui.html`
+
+Seed credentials: `admin@gymsynk.com` / `password` and `cashier@gymsynk.com` / `password`
 
 ---
 

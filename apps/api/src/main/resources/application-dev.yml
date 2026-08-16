@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gymsynk
+    username: gymsynk
+    password: gymsynk_dev
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""           # no password in dev
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.gymsynk: DEBUG
+    org.springframework.security: DEBUG

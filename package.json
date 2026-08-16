@@ -1,0 +1,10 @@
+{
+  "name": "gymsynk",
+  "private": true,
+  "scripts": {
+    "dev:web":   "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
+    "test:web":  "pnpm --filter web test",
+    "test:e2e":  "pnpm --filter web exec playwright test"
+  }
+}

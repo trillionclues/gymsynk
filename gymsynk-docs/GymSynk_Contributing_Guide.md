@@ -46,10 +46,10 @@ gymsynk/
 
 ## Prerequisites
 
-- Java 21 (via SDKMAN or homebrew: `sdk install java 21-tem`)
+- Java 21 (via SDKMAN or homebrew: `sdk install java 21-tem`) — Kotlin compiles to JVM 21
 - Node.js 20+ and pnpm (`npm install -g pnpm`)
 - Docker + Docker Compose v2
-- (Optional) IntelliJ IDEA or VS Code
+- (Optional) IntelliJ IDEA (best Kotlin support) or VS Code with the Kotlin extension
 
 ## Start Dev Environment
 
@@ -64,7 +64,7 @@ docker compose -f docker-compose.dev.yml ps
 ## Start Backend
 
 ```bash
-cd backend
+cd apps/api
 
 # First run: Flyway migrations run automatically on startup
 ./gradlew bootRun --args='--spring.profiles.active=dev'
@@ -74,7 +74,7 @@ cd backend
 # Health: http://localhost:8080/api/v1/actuator/health
 ```
 
-The `dev` profile loads `application-dev.yml` which points to the local Docker DB and Redis. The `DataSeeder` component runs on startup and creates:
+The `dev` profile loads `application-dev.yml` which points to the local Docker DB and Redis. The `DataSeeder` component (gated with `@Profile("dev")`) runs on startup and creates:
 - Org: **GymSynk Demo**
 - 1 location
 - 1 ADMIN user: `admin@gymsynk.com` / `password`
@@ -84,15 +84,13 @@ The `dev` profile loads `application-dev.yml` which points to the local Docker D
 ## Start Frontend
 
 ```bash
-cd frontend
-
+# From repo root
 pnpm install
 
-# Set env vars for local dev
-cp .env.local.example .env.local
+cp apps/web/.env.local.example apps/web/.env.local
 # NEXT_PUBLIC_API_URL=http://localhost:8080
 
-pnpm dev
+pnpm dev:web
 
 # Frontend available at http://localhost:3000
 ```
@@ -104,7 +102,7 @@ pnpm dev
 ## Backend Unit + Integration Tests
 
 ```bash
-cd backend
+cd apps/api
 
 # Unit tests only (no Docker required)
 ./gradlew test
@@ -121,19 +119,21 @@ Key test suites:
 - `MembershipExpirySchedulerTest` — expiry detection and email trigger
 - `PaymentStrategyTest` — all three strategy modes
 
+> Unit tests use **MockK** (Kotlin-native mock library) rather than Mockito. MockK handles Kotlin's `final` classes by default and has a more natural DSL for Kotlin.
+
 ## Frontend Tests
 
 ```bash
-cd frontend
+# From repo root (runs in apps/web via workspace filter)
 
 # Component tests (Vitest + React Testing Library)
-pnpm test
+pnpm test:web
 
-# E2E (Playwright — requires backend running)
-pnpm exec playwright test
+# E2E (Playwright — requires backend running on :8080)
+pnpm test:e2e
 
 # E2E in UI mode
-pnpm exec playwright test --ui
+pnpm --filter web exec playwright test --ui
 ```
 
 ---
@@ -144,26 +144,26 @@ pnpm exec playwright test --ui
 
 - **Domain-driven packages** — each feature is self-contained (`auth/`, `member/`, `checkin/`, etc.)
 - **No cross-package entity references** — services communicate via interfaces and DTOs only
-- **Record-based DTOs** — use Java 21 records for all request/response objects
-- **@PreAuthorize at service layer** — not just controller; role checks in service methods
-- **@Transactional on service methods** — not controller methods
+- **Data class DTOs** — use Kotlin data classes for all request/response objects, not separate builder patterns
+- **`@PreAuthorize` at service layer** — not just controller; role checks in service methods
+- **`@Transactional` on service methods** — not controller methods
 - **Audit every mutation** — use the `@Auditable` AOP aspect on service methods that mutate data
 - **No hardcoded config** — all configurable values come from `application.yml` or env vars
 - **Flyway migrations are additive** — never drop or rename columns within a minor version
 
-```java
-// Good: record DTO
-public record MemberRegistrationRequest(
-    @NotBlank String firstName,
-    @NotBlank String lastName,
-    @Email String email,
-    String phone,
-    @NotNull UUID planId
-) {}
+```kotlin
+// Good: data class DTO
+data class MemberRegistrationRequest(
+    @field:NotBlank val firstName: String,
+    @field:NotBlank val lastName: String,
+    @field:Email val email: String?,
+    val phone: String?,
+    @field:NotNull val planId: UUID
+)
 
 // Good: service-level authorization
 @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
-public MemberResponse registerMember(MemberRegistrationRequest request) { ... }
+fun registerMember(request: MemberRegistrationRequest): MemberResponse { ... }
 ```
 
 ## Frontend (Next.js 15 / TypeScript)
