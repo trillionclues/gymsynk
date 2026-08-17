@@ -11,6 +11,15 @@ spring:
   jpa:
     show-sql: false
 
+app:
+  jwt:
+    secret: dev-secret-gymsynk-change-in-production-must-be-32chars
+  qr:
+    token-ttl-seconds: 120
+  otp:
+    ttl-seconds: 300
+    max-requests-per-10min: 3
+
 logging:
   level:
     com.gymsynk: DEBUG

@@ -1,6 +1,4 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+/* GymSynk custom design tokens — loaded after shadcn base in layout.tsx */
 
 /* ── Light mode tokens */
 :root.light {
@@ -112,25 +110,15 @@
   --color-overlay:          rgba(0, 0, 0, 0.65);
 }
 
-/* ── Base styles */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+/* ── Base overrides — applied on top of shadcn base */
 html {
   scroll-behavior: smooth;
   text-size-adjust: 100%;
 }
 
 body {
-  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, sans-serif);
   background-color: var(--color-bg);
   color: var(--color-text);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Background grid */

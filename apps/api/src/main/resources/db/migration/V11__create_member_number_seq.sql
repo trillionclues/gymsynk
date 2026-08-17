@@ -1,0 +1,5 @@
+CREATE SEQUENCE IF NOT EXISTS member_number_seq
+    START 1
+    INCREMENT 1
+    NO MAXVALUE
+    CACHE 1;
