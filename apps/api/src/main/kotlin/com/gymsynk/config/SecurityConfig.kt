@@ -27,6 +27,7 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
                 it.requestMatchers(
                     "/auth/**", "/setup", "/actuator/**",
                     "/swagger-ui/**", "/v3/api-docs/**",
+                    "/ws/**",           // WebSocket handshake + SockJS endpoints
                 ).permitAll()
                 it.anyRequest().authenticated()
             }

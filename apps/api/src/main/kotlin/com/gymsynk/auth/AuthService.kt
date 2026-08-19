@@ -29,7 +29,7 @@ class AuthService(
     private val log = LoggerFactory.getLogger(AuthService::class.java)
     private val rng = SecureRandom()
 
-    private val refreshTtl = Duration.ofDays(7)
+    private val refreshTtl = Duration.ofDays(30)   // 30 days — member PWA sessions persist across weeks
     private val refreshCookieName = "refresh_token"
 
     // Staff login

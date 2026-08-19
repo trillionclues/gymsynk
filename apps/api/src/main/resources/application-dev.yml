@@ -14,6 +14,8 @@ spring:
 app:
   jwt:
     secret: dev-secret-gymsynk-change-in-production-must-be-32chars
+    access-ttl-minutes: 15
+    refresh-ttl-days: 30
   qr:
     token-ttl-seconds: 120
   otp:
