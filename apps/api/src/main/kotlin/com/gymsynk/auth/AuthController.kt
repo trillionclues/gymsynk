@@ -2,6 +2,7 @@ package com.gymsynk.auth
 
 import com.gymsynk.auth.dto.*
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -11,16 +12,25 @@ import org.springframework.web.bind.annotation.*
 class AuthController(private val authService: AuthService) {
 
     @PostMapping("/login")
-    fun login(@RequestBody @Valid req: LoginRequest) =
-        ResponseEntity.ok(authService.staffLogin(req))
+    fun login(
+        @RequestBody @Valid req: LoginRequest,
+        response: HttpServletResponse,
+    ): ResponseEntity<TokenResponse> =
+        ResponseEntity.ok(authService.staffLogin(req, response))
 
     @PostMapping("/refresh")
-    fun refresh(request: HttpServletRequest) =
-        ResponseEntity.ok(authService.refresh(request))
+    fun refresh(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): ResponseEntity<TokenResponse> =
+        ResponseEntity.ok(authService.refresh(request, response))
 
     @PostMapping("/logout")
-    fun logout(request: HttpServletRequest): ResponseEntity<Void> {
-        authService.logout(request)
+    fun logout(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): ResponseEntity<Void> {
+        authService.logout(request, response)
         return ResponseEntity.noContent().build()
     }
 
@@ -31,6 +41,9 @@ class AuthController(private val authService: AuthService) {
     }
 
     @PostMapping("/otp/verify")
-    fun verifyOtp(@RequestBody @Valid req: OtpVerifyRequest) =
-        ResponseEntity.ok(authService.verifyOtp(req))
+    fun verifyOtp(
+        @RequestBody @Valid req: OtpVerifyRequest,
+        response: HttpServletResponse,
+    ): ResponseEntity<TokenResponse> =
+        ResponseEntity.ok(authService.verifyOtp(req, response))
 }
