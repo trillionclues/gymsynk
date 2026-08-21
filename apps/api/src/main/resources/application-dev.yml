@@ -7,7 +7,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: ""           # no password in dev
+      password: ""
   jpa:
     show-sql: false
 
@@ -21,7 +21,6 @@ app:
   otp:
     ttl-seconds: 300
     max-requests-per-10min: 3
-
 logging:
   level:
     com.gymsynk: DEBUG

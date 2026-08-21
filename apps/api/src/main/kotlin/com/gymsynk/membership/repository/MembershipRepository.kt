@@ -20,5 +20,11 @@ interface MembershipRepository : JpaRepository<Membership, UUID> {
     fun findActiveByUserAndLocation(userId: UUID, locationId: UUID): Membership?
 
     @Query("SELECT m FROM Membership m WHERE m.status = :status AND m.endDate < :date")
-    fun findAllByStatusAndEndDateBefore(status: String, date: LocalDate): List<Membership>
+    fun findExpiredCandidates(status: String, date: LocalDate): List<Membership>
+
+    @Query("SELECT m FROM Membership m WHERE m.status = :status AND m.endDate = :date")
+    fun findExpiringOn(status: String, date: LocalDate): List<Membership>
+
+    @Query("SELECT m FROM Membership m WHERE m.status = :status AND m.endDate = :date")
+    fun findAllByStatusAndEndDate(status: String, date: LocalDate): List<Membership>
 }
