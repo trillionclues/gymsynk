@@ -35,6 +35,8 @@ management:
         include: health,info
 
 app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   mail:
     # RESEND_FROM must be a sender identity verified in Resend.
     from: ${RESEND_FROM:GymSynk <noreply@yourdomain.com>}

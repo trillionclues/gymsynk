@@ -1,37 +1,92 @@
-import axios from 'axios'
+import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+
 export const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080',
-    withCredentials: true,  // sends httpOnly refresh token cookie
+  baseURL: apiBaseUrl,
+  withCredentials: true, // sends httpOnly refresh token cookie
 });
 
 api.interceptors.request.use((config) => {
-    const token = useAuthStore.getState().accessToken;
-    if(token) {
-        config.headers.Authorization = `Bearer ${token}`;
+  const token = useAuthStore.getState().accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Mutex / Queue state for handling concurrent token refresh calls
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else if (token) {
+      prom.resolve(token);
     }
-    return config;
-})
+  });
+  failedQueue = [];
+};
 
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
-      original._retry = true;
+    const originalRequest = error.config;
+    const status = error.response?.status;
+    const isAuthUrl =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/refresh');
+
+    if ((status === 401 || status === 403) && originalRequest && !originalRequest._retry && !isAuthUrl) {
+      if (isRefreshing) {
+        // Refresh is already in progress — queue this request to await the new token
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            if (!originalRequest.headers) {
+              originalRequest.headers = {};
+            }
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'}/api/v1/auth/refresh`,
+          `${apiBaseUrl}/auth/refresh`,
           {},
           { withCredentials: true },
         );
-        useAuthStore.getState().setAccessToken(data.accessToken);
-        original.headers.Authorization = `Bearer ${data.accessToken}`;
-        return api(original);
-      } catch {
+        const newAccessToken = data.accessToken;
+        useAuthStore.getState().setAccessToken(newAccessToken);
+
+        if (!originalRequest.headers) {
+          originalRequest.headers = {};
+        }
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        processQueue(null, newAccessToken);
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
         useAuthStore.getState().clearSession();
-        window.location.href = '/login';
+        if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
     return Promise.reject(error);
