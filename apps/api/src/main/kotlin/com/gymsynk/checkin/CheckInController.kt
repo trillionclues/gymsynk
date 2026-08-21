@@ -1,6 +1,7 @@
 package com.gymsynk.checkin
 
 import com.gymsynk.checkin.dto.*
+import com.gymsynk.auth.requireAuthContext
 import com.gymsynk.common.util.QrCodeGenerator
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -29,7 +30,7 @@ class CheckInController(
     @PostMapping("/validate")
     @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN')")
     fun validateQr(@RequestBody @Valid req: QrValidateRequest, auth: Authentication): ResponseEntity<CheckInResponse> {
-        val orgId = UUID.fromString((auth.details as Map<*, *>)["orgId"] as String)
+        val orgId = auth.requireAuthContext().orgId
         return ResponseEntity.ok(checkInService.validateQrAndRecord(req.token, orgId, req.locationId))
     }
 
@@ -40,7 +41,7 @@ class CheckInController(
         @RequestHeader(value = "X-Override", required = false) override: Boolean?,
         auth: Authentication,
     ): ResponseEntity<CheckInResponse> {
-        val orgId = UUID.fromString((auth.details as Map<*, *>)["orgId"] as String)
+        val orgId = auth.requireAuthContext().orgId
         val reason = if (override == true) req.overrideReason else null
         return ResponseEntity.ok(checkInService.manualCheckIn(req.memberId, req.locationId, orgId, reason))
     }

@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import java.util.UUID
 
 @Component
 class JwtAuthFilter(private val jwtService: JwtService) : OncePerRequestFilter() {
@@ -22,11 +23,13 @@ class JwtAuthFilter(private val jwtService: JwtService) : OncePerRequestFilter()
             runCatching {
                 val claims = jwtService.validateAndExtract(header.removePrefix("Bearer "))
                 val role   = claims["role"] as String
+                val userId = UUID.fromString(claims.subject)
+                val orgId  = UUID.fromString(claims["orgId"] as String)
                 val auth   = UsernamePasswordAuthenticationToken(
                     claims.subject, null,
                     listOf(SimpleGrantedAuthority("ROLE_$role")),
                 )
-                auth.details = mapOf("userId" to claims.subject, "orgId" to claims["orgId"], "role" to role)
+                auth.details = AuthContext(userId = userId, orgId = orgId, role = role)
                 SecurityContextHolder.getContext().authentication = auth
             }
         }
