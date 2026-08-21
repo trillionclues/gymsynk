@@ -77,6 +77,10 @@ class CheckInService(
         val member = userRepository.findById(memberId).orElseThrow {
             BusinessException(ErrorCodes.MEMBER_NOT_FOUND, "Member not found", 404)
         }
+
+        if (member.org.id != cashierOrgId)
+            throw BusinessException(ErrorCodes.UNAUTHORIZED, "Cross-gym check-in not allowed", 403)
+
         val membership = membershipRepository.findActiveByUserAndLocation(memberId, locationId)
         val status = when {
             overrideReason != null -> "OVERRIDE"

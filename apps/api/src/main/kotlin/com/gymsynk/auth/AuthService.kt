@@ -1,6 +1,7 @@
 package com.gymsynk.auth
 
 import com.gymsynk.auth.dto.*
+import com.gymsynk.common.email.EmailService
 import com.gymsynk.common.exception.BusinessException
 import com.gymsynk.common.exception.ErrorCodes
 import com.gymsynk.member.repository.UserRepository
@@ -22,17 +23,17 @@ class AuthService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val redis: StringRedisTemplate,
-    @Value("\${app.jwt.secret}") private val jwtSecret: String,
+    private val emailService: EmailService,
     @Value("\${app.otp.ttl-seconds}") private val otpTtlSeconds: Long,
     @Value("\${app.otp.max-requests-per-10min}") private val otpMaxRequests: Long,
 ) {
     private val log = LoggerFactory.getLogger(AuthService::class.java)
     private val rng = SecureRandom()
 
-    private val refreshTtl = Duration.ofDays(7)
+    private val refreshTtl = Duration.ofDays(30)
     private val refreshCookieName = "refresh_token"
 
-    // Staff login
+    // ── Staff login ──────────────────────────────────────────────────────────
 
     fun staffLogin(req: LoginRequest, response: HttpServletResponse): TokenResponse {
         val user = userRepository.findByEmail(req.email).orElseThrow {
@@ -45,14 +46,12 @@ class AuthService(
         if (user.passwordHash == null || !passwordEncoder.matches(req.password, user.passwordHash))
             throw BusinessException(ErrorCodes.UNAUTHORIZED, "Invalid email or password", 401)
 
-        // Only ADMIN and CASHIER can use the staff login endpoint
         if (user.role.name == "MEMBER")
             throw BusinessException(ErrorCodes.UNAUTHORIZED, "Members use OTP login", 403)
 
         val accessToken  = jwtService.generateAccessToken(user.id, user.role.name, user.org.id)
         val refreshToken = jwtService.generateRefreshToken()
 
-        // Store refresh token in Redis — key holds userId so we can look up the user on refresh
         redis.opsForValue().set(
             "refresh:$refreshToken",
             "${user.id}:${user.role.name}:${user.org.id}",
@@ -63,73 +62,63 @@ class AuthService(
         return TokenResponse(accessToken)
     }
 
-    // Token refresh
+    // ── Token refresh ────────────────────────────────────────────────────────
 
     fun refresh(request: HttpServletRequest, response: HttpServletResponse): TokenResponse {
         val refreshToken = extractRefreshCookie(request)
             ?: throw BusinessException(ErrorCodes.TOKEN_INVALID, "No refresh token", 401)
 
-        // GETDEL — atomically consumes the old token (rotation)
         val value = redis.opsForValue().getAndDelete("refresh:$refreshToken")
             ?: throw BusinessException(ErrorCodes.TOKEN_EXPIRED, "Refresh token expired or already used", 401)
 
-        val (userId, role, orgId) = value.split(":")
-        val accessToken      = jwtService.generateAccessToken(UUID.fromString(userId), role, UUID.fromString(orgId))
-        val newRefreshToken  = jwtService.generateRefreshToken()
+        val parts   = value.split(":")
+        val userId  = parts[0]
+        val role    = parts[1]
+        val orgId   = parts[2]
 
-        // Issue rotated refresh token
+        val accessToken     = jwtService.generateAccessToken(UUID.fromString(userId), role, UUID.fromString(orgId))
+        val newRefreshToken = jwtService.generateRefreshToken()
+
         redis.opsForValue().set("refresh:$newRefreshToken", value, refreshTtl)
         setRefreshCookie(response, newRefreshToken)
 
         return TokenResponse(accessToken)
     }
 
-    // Logout
+    // ── Logout ───────────────────────────────────────────────────────────────
 
     fun logout(request: HttpServletRequest, response: HttpServletResponse) {
-        extractRefreshCookie(request)?.let { token ->
-            redis.delete("refresh:$token")
-        }
-        // Clear the cookie
-        val cookie = Cookie(refreshCookieName, "").apply {
+        extractRefreshCookie(request)?.let { redis.delete("refresh:$it") }
+        response.addCookie(Cookie(refreshCookieName, "").apply {
             isHttpOnly = true
-            secure     = false   // set to true in prod
+            secure     = false
             path       = "/"
             maxAge     = 0
-        }
-        response.addCookie(cookie)
+        })
     }
 
-    // Member OTP login
+    // ── Member OTP login ─────────────────────────────────────────────────────
 
     fun requestOtp(identifier: String) {
-        // Rate-limit: max N requests per 10 minutes per identifier
-        val rateKey   = "otp_rate:$identifier"
-        val attempts  = redis.opsForValue().increment(rateKey) ?: 1L
+        val rateKey  = "otp_rate:$identifier"
+        val attempts = redis.opsForValue().increment(rateKey) ?: 1L
         if (attempts == 1L) redis.expire(rateKey, Duration.ofMinutes(10))
         if (attempts > otpMaxRequests)
             throw BusinessException("OTP_RATE_LIMIT", "Too many OTP requests — try again in 10 minutes", 429)
 
-        // Verify the identifier belongs to a known member
+        // Verify member exists — silent 404 to avoid user enumeration in logs
         userRepository.findByEmail(identifier).orElseThrow {
-            // Return 204 regardless to avoid user enumeration — just don't store/send the code
-            // We throw here only to avoid generating a code for unknown emails
             BusinessException(ErrorCodes.MEMBER_NOT_FOUND, "Member not found", 404)
         }
 
         val code = "%06d".format(rng.nextInt(1_000_000))
         redis.opsForValue().set("otp:$identifier", code, Duration.ofSeconds(otpTtlSeconds))
 
-        // In dev: log the code so you can test without an email server
-        // In prod: replace this block with JavaMailSender send
-        log.info("OTP for {} → {} (remove this log line before production)", identifier, code)
+        // Send via Resend SMTP — fires async, never crashes the request
+        emailService.sendOtp(identifier, code, otpTtlSeconds / 60)
 
-        // TODO (Phase 4): wire JavaMailSender here:
-        // mailSender.send { msg ->
-        //     msg.setTo(identifier)
-        //     msg.subject = "Your GymSynk login code"
-        //     msg.text = "Your code is $code. It expires in 5 minutes."
-        // }
+        // Keep dev log so you can test without checking email
+        log.debug("OTP for {} → {}", identifier, code)
     }
 
     fun verifyOtp(req: OtpVerifyRequest, response: HttpServletResponse): TokenResponse {
@@ -155,16 +144,15 @@ class AuthService(
         return TokenResponse(accessToken)
     }
 
-    // Helpers
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun setRefreshCookie(response: HttpServletResponse, token: String) {
-        val cookie = Cookie(refreshCookieName, token).apply {
+        response.addCookie(Cookie(refreshCookieName, token).apply {
             isHttpOnly = true
-            secure     = false    // set to true behind HTTPS in production
+            secure     = false   // true behind HTTPS in production
             path       = "/"
             maxAge     = refreshTtl.seconds.toInt()
-        }
-        response.addCookie(cookie)
+        })
     }
 
     private fun extractRefreshCookie(request: HttpServletRequest): String? =

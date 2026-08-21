@@ -10,11 +10,12 @@ import java.util.UUID
 import javax.crypto.SecretKey
 
 @Service
-
-class JwtService(@Value("\${app.jwt.secret}") secret: String) {
+class JwtService(
+    @Value("\${app.jwt.secret}") secret: String,
+    @Value("\${app.jwt.access-ttl-minutes:15}") private val accessTtlMinutes: Long,
+) {
     private val key: SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
-    private val accessTtlMs  = 15 * 60 * 1000L
-    private val refreshTtlMs = 7 * 24 * 60 * 60 * 1000L
+    private val accessTtlMs = accessTtlMinutes * 60 * 1000L
 
     fun generateAccessToken(userId: UUID, role: String, orgId: UUID): String =
         Jwts.builder()
