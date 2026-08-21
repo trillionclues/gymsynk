@@ -27,4 +27,31 @@ interface MembershipRepository : JpaRepository<Membership, UUID> {
 
     @Query("SELECT m FROM Membership m WHERE m.status = :status AND m.endDate = :date")
     fun findAllByStatusAndEndDate(status: String, date: LocalDate): List<Membership>
+
+    @Query("""
+        SELECT m FROM Membership m
+        WHERE m.userId = :userId
+          AND m.orgId = :orgId
+          AND m.status = 'ACTIVE'
+        ORDER BY m.endDate DESC
+    """)
+    fun findLatestActiveByUserIdAndOrgId(userId: UUID, orgId: UUID): Membership?
+
+    @Query("""
+        SELECT m FROM Membership m
+        WHERE m.orgId = :orgId
+          AND m.status = 'ACTIVE'
+          AND m.endDate BETWEEN :startDate AND :endDate
+        ORDER BY m.endDate ASC
+    """)
+    fun findExpiringBetween(orgId: UUID, startDate: LocalDate, endDate: LocalDate): List<Membership>
+
+    @Query("""
+        SELECT COUNT(DISTINCT m.userId) FROM Membership m
+        WHERE m.orgId = :orgId
+          AND m.status = 'ACTIVE'
+          AND m.startDate <= :date
+          AND m.endDate >= :date
+    """)
+    fun countActiveMembersOn(orgId: UUID, date: LocalDate): Long
 }
