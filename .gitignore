@@ -1,2 +1,27 @@
+# Dependencies & Package Stores
 node_modules
+.pnpm-store
+
+# IDEs & Editors
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+
+# Next.js & Frontend Build Outputs
+.next
+out
+dist
+
+# Gradle / Java / Kotlin Build Outputs
+.gradle
+build
+target
+
+# Environment & Secret files
 .env
+.env*.local
+
+# Logs
+*.log
