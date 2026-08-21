@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/locations")
 @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
 class LocationController(
+
     private val locationQueryService: LocationQueryService,
 ) {
     @GetMapping

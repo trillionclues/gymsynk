@@ -5,7 +5,7 @@ type UserRole = 'ADMIN' | 'CASHIER' | 'MEMBER';
 
 interface SessionUser {
     id: string;
-    email: string;
+    email: string | null;
     role: UserRole;
     orgId: string;
 }
@@ -31,3 +31,5 @@ export const useAuthStore = create<AuthStore>()(
         partialize: (state) => ({user: state.user}),
     })
 )
+
+export type { UserRole, SessionUser };
