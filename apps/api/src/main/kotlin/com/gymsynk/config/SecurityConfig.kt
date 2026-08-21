@@ -3,6 +3,10 @@ package com.gymsynk.config
 import com.gymsynk.auth.JwtAuthFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -18,10 +22,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
 
+    @Value("\${app.cors.allowed-origins:http://localhost:3000}")
+    private lateinit var allowedOrigins: String
+
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() }
+            .cors { }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.requestMatchers(
@@ -37,4 +45,23 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder(12)
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration().apply {
+            allowedOrigins = this@SecurityConfig.allowedOrigins
+                .split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+            allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+            allowedHeaders = listOf("Authorization", "Content-Type", "X-Override")
+            exposedHeaders = listOf("Set-Cookie")
+            allowCredentials = true
+            maxAge = 3600
+        }
+
+        return UrlBasedCorsConfigurationSource().apply {
+            registerCorsConfiguration("/**", configuration)
+        }
+    }
 }

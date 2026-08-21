@@ -116,6 +116,7 @@ class CheckInService(
         redis.convertAndSend("checkin:${member.org.id}", event)
         return CheckInResponse(
             checkInId    = checkIn.id,
+            memberId     = member.id,
             memberName   = "${member.firstName} ${member.lastName}",
             memberNumber = member.memberNumber ?: "",
             planName     = membership?.plan?.name ?: "Unknown",

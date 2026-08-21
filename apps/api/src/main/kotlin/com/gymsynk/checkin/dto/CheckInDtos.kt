@@ -6,6 +6,7 @@ import java.util.UUID
 
 data class CheckInResponse(
     val checkInId: UUID,
+    val memberId: UUID,
     val memberName: String,
     val memberNumber: String,
     val planName: String,
