@@ -3,9 +3,6 @@ import Link from 'next/link';
 import { ArrowRight, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-/* ──────────────────────────────────────────
-   ActionLink
-────────────────────────────────────────── */
 export function ActionLink({
   href,
   icon: Icon,
@@ -27,9 +24,6 @@ export function ActionLink({
   );
 }
 
-/* ──────────────────────────────────────────
-   Panel (card wrapper)
-────────────────────────────────────────── */
 export function Panel({
   title,
   subtitle,
@@ -57,9 +51,6 @@ export function Panel({
   );
 }
 
-/* ──────────────────────────────────────────
-   StatCard  (with optional trend indicator)
-────────────────────────────────────────── */
 export function StatCard({
   icon: Icon,
   label,
@@ -101,9 +92,6 @@ export function StatCard({
   );
 }
 
-/* ──────────────────────────────────────────
-   EmptyBlock
-────────────────────────────────────────── */
 export function EmptyBlock({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-xl border border-dashed border-[color:var(--color-border)] px-5 py-10 text-center">
@@ -113,9 +101,6 @@ export function EmptyBlock({ title, body }: { title: string; body: string }) {
   );
 }
 
-/* ──────────────────────────────────────────
-   FeedSkeleton
-────────────────────────────────────────── */
 export function FeedSkeleton({ compact }: { compact?: boolean } = {}) {
   return (
     <div className={cn('space-y-2', compact && 'space-y-1.5')}>
@@ -136,9 +121,6 @@ export function FeedSkeleton({ compact }: { compact?: boolean } = {}) {
   );
 }
 
-/* ──────────────────────────────────────────
-   StatusPill
-────────────────────────────────────────── */
 export function StatusPill({ value }: { value: string }) {
   const tone =
     {
@@ -167,9 +149,6 @@ export function StatusPill({ value }: { value: string }) {
   );
 }
 
-/* ──────────────────────────────────────────
-   MemberInitials avatar
-────────────────────────────────────────── */
 export function MemberAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
   const initials = name
     .split(' ')
@@ -188,9 +167,6 @@ export function MemberAvatar({ name, size = 'md' }: { name: string; size?: 'sm' 
   );
 }
 
-/* ──────────────────────────────────────────
-   formatCurrency
-────────────────────────────────────────── */
 export function formatCurrency(value: number | string) {
   const amount = typeof value === 'string' ? Number(value) : value;
   return new Intl.NumberFormat('en-NG', {

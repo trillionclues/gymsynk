@@ -71,7 +71,7 @@ export function ScannerControls({
         Manual check-in
       </button>
 
-      {/* Override section — visible when last result was EXPIRED_PLAN */}
+      {/* visible when last result was EXPIRED_PLAN */}
       {canOverride ? (
         <div className="space-y-3 rounded-xl border border-[color:var(--color-status-override-bg)] bg-[color:var(--color-status-override-bg)] p-4">
           <div>

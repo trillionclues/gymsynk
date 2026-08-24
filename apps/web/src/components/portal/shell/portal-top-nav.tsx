@@ -47,7 +47,6 @@ export function PortalTopNav() {
       <header className="sticky top-0 z-30 border-b border-[color:var(--color-border)] bg-[color:var(--color-nav-bg-scrolled)] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-8">
 
-          {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 mr-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[color:var(--color-primary)] text-[color:var(--color-text-on-primary)] shadow-sm">
               <Sparkles className="h-4 w-4" />
@@ -57,7 +56,6 @@ export function PortalTopNav() {
             </span>
           </Link>
 
-          {/* Desktop nav — centered */}
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {navigation.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -83,7 +81,6 @@ export function PortalTopNav() {
             })}
           </nav>
 
-          {/* Right controls */}
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
             <div className="hidden sm:block">
@@ -96,7 +93,6 @@ export function PortalTopNav() {
             >
               Sign out
             </button>
-            {/* Mobile hamburger */}
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
@@ -108,7 +104,6 @@ export function PortalTopNav() {
           </div>
         </div>
 
-        {/* Mobile nav drawer */}
         {mobileOpen && (
           <div className="md:hidden border-t border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 pb-4 pt-3 animate-fade-up">
             <nav className="space-y-1">

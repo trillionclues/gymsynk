@@ -34,7 +34,6 @@ export function MemberListPanel({
 }: MemberListPanelProps) {
   return (
     <section className="rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_1px_4px_var(--color-shadow)] w-full">
-      {/* Header */}
       <div className="flex flex-col gap-3 border-b border-[color:var(--color-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[color:var(--color-text-strong)]">Member Directory</h3>
@@ -65,7 +64,6 @@ export function MemberListPanel({
       </div>
 
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
@@ -133,7 +131,6 @@ export function MemberListPanel({
         </table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between border-t border-[color:var(--color-border)] px-5 py-3">
         <p className="text-xs text-[color:var(--color-text-muted)]">
           Page {page + 1} of {Math.max(totalPages, 1)}

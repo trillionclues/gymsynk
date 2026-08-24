@@ -55,7 +55,6 @@ export function ScannerPage() {
         )}
       </div>
 
-      {/* Error banner */}
       {station.error ? (
         <div className="flex items-center justify-between rounded-xl border border-[color:var(--color-status-expired-bg)] bg-[color:var(--color-status-expired-bg)] px-4 py-3 text-sm text-[color:var(--color-status-expired)]">
           <span>{station.error}</span>
@@ -69,16 +68,13 @@ export function ScannerPage() {
         </div>
       ) : null}
 
-      {/* Main grid */}
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        {/* Camera column */}
         <div className="space-y-3">
           <QrScannerCamera
             enabled={Boolean(station.locationId) && !station.busy}
             onDetected={handleDetected}
           />
 
-          {/* Status bar */}
           <div className="flex items-center justify-between rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-3.5 shadow-xs">
             <div className="flex items-center gap-3">
               <div
@@ -105,7 +101,6 @@ export function ScannerPage() {
           </div>
         </div>
 
-        {/* Controls column */}
         <ScannerControls
           locations={station.locations}
           loadingLocations={station.loadingLocations}

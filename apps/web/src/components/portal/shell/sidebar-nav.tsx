@@ -86,7 +86,6 @@ export function SidebarNav({
         </div>
       </div>
 
-      {/* Mobile Backdrop & Drawer Overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs md:hidden"
@@ -94,7 +93,6 @@ export function SidebarNav({
         />
       )}
 
-      {/* Sidebar Container (Desktop Fixed + Mobile Overlay) */}
       <aside
         className={cn(
           'fixed bottom-0 top-0 z-50 flex flex-col border-r border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] transition-all duration-300 ease-in-out shadow-xs',
@@ -104,7 +102,6 @@ export function SidebarNav({
           mobileOpen ? 'left-0 w-64' : '-left-full md:left-0',
         )}
       >
-        {/* Top Header: Brand + Collapse Toggle */}
         <div className="flex h-16 items-center justify-between px-3.5 border-b border-[color:var(--color-border)]">
           {collapsed && !mobileOpen ? (
             /* Collapsed state: Logo icon is used to expand, collapse icon is HIDDEN */
@@ -117,7 +114,6 @@ export function SidebarNav({
               <Sparkles className="h-4 w-4" />
             </button>
           ) : (
-            /* Expanded state: Show logo + brand title + collapse icon button */
             <>
               <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden min-w-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[color:var(--color-primary)] text-[color:var(--color-text-on-primary)] shadow-sm font-bold">
@@ -145,7 +141,6 @@ export function SidebarNav({
           )}
         </div>
 
-        {/* Main Navigation Links */}
         <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-6">
           <nav className="space-y-1">
             {navigation.map((item) => {
@@ -186,7 +181,6 @@ export function SidebarNav({
             })}
           </nav>
 
-          {/* Secondary Navigation (Settings, Docs) */}
           <div className="border-t border-[color:var(--color-border)] pt-4 space-y-1">
             {secondaryNav.map((item) => {
               const Icon = item.icon;
@@ -211,7 +205,6 @@ export function SidebarNav({
           </div>
         </div>
 
-        {/* Bottom Section: Theme Toggle & User Profile */}
         <div className="border-t border-[color:var(--color-border)] p-3 space-y-3 bg-[color:var(--color-surface-2)]">
           <div className={cn('flex items-center justify-center', (!collapsed || mobileOpen) && 'w-full')}>
             <ThemeToggle showLabel={!collapsed || mobileOpen} />
