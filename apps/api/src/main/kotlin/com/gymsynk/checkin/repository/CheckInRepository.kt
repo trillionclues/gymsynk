@@ -38,6 +38,11 @@ interface CheckInRepository : JpaRepository<CheckIn, UUID> {
         end: Instant,
     ): List<CheckIn>
 
+    fun findByUserIdOrderByCheckInTimeDesc(
+        userId: UUID,
+        pageable: org.springframework.data.domain.Pageable,
+    ): org.springframework.data.domain.Page<CheckIn>
+
     @Query("""
         SELECT COUNT(c) FROM CheckIn c
         WHERE c.orgId = :orgId

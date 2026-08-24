@@ -3,8 +3,7 @@
 import { LoaderCircle, RefreshCw } from 'lucide-react';
 import type { TodayCheckInResponse } from '@/services/dashboard-service';
 import { Chit, EmptyBlock, FeedSkeleton, Tag, Panel } from './dashboard-ui';
-
-const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
+import { MONO } from '@/lib/constants';
 
 export function DashboardFeed({
   checkIns,
@@ -53,7 +52,6 @@ export function DashboardFeed({
         </div>
       }
     >
-      {/* Remove the inner padding from Panel for feed rows */}
       <div className="-mx-[22px] -mt-[22px] -mb-[22px]">
         {loading && !checkIns.length ? (
           <FeedSkeleton />
@@ -96,7 +94,6 @@ function FeedRow({
       className="flex items-center justify-between gap-[14px] border-b border-[color:var(--color-border)] px-[22px] py-[14px] last:border-0 hover:bg-[color:var(--color-surface-2)] transition-colors"
       style={{ cursor: onInspect ? 'pointer' : 'default' }}
     >
-      {/* Left — tag + name + meta */}
       <div className="flex min-w-0 items-center gap-[14px]">
         <Tag name={entry.memberName} />
         <div className="min-w-0">
@@ -114,7 +111,6 @@ function FeedRow({
         </div>
       </div>
 
-      {/* Right — chit + time */}
       <div className="flex shrink-0 flex-col items-end gap-1">
         <Chit value={entry.status} />
         <span className="text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>

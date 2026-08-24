@@ -5,9 +5,7 @@ import { createPortal } from 'react-dom';
 import { Calendar, Phone, Mail, Hash, ShieldCheck } from 'lucide-react';
 import type { MemberProfileResponse } from '@/services/member-service';
 import { cn } from '@/lib/utils';
-
-const MONO: React.CSSProperties    = { fontFamily: 'var(--font-mono)' };
-const DISPLAY: React.CSSProperties = { fontFamily: 'var(--font-display)', textTransform: 'uppercase' };
+import { DISPLAY, MONO } from '@/lib/constants';
 
 export function MemberProfileDrawer({
   profile,
@@ -35,7 +33,6 @@ export function MemberProfileDrawer({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex justify-end">
-      {/* Backdrop */}
       <div
         className="fixed inset-0 transition-opacity"
         style={{ background: 'var(--color-overlay)' }}
@@ -197,7 +194,6 @@ function TapeProgress({ endDate }: { endDate: string }) {
 
   return (
     <div className="mt-4">
-      {/* Tape header */}
       <div className="mb-2 flex items-center justify-between">
         <span
           className="text-[10px] uppercase tracking-[0.10em]"

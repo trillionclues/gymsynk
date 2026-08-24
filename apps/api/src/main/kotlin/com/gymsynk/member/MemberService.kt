@@ -135,17 +135,21 @@ class MemberService(
         )
     }
 
-    private fun Membership.toActiveMembershipView(): ActiveMembershipView =
-        ActiveMembershipView(
-            membershipId = id,
-            planName = plan.name,
-            locationId = locationId,
-            startDate = startDate,
-            endDate = endDate,
-            status = status,
-            price = plan.price,
-            currency = plan.currency,
+    private fun Membership.toActiveMembershipView(): ActiveMembershipView {
+        val today = LocalDate.now(ZoneId.of("UTC"))
+        val days  = java.time.temporal.ChronoUnit.DAYS.between(today, endDate).coerceAtLeast(0)
+        return ActiveMembershipView(
+            membershipId  = id,
+            planName      = plan.name,
+            locationId    = locationId,
+            startDate     = startDate,
+            endDate       = endDate,
+            status        = status,
+            price         = plan.price,
+            currency      = plan.currency,
+            daysRemaining = days,
         )
+    }
 
     private fun nextMemberNumber(): String {
         val nextValue = (entityManager.createNativeQuery("select nextval('member_number_seq')").singleResult as Number).toLong()

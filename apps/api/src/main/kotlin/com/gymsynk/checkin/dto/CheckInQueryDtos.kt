@@ -15,3 +15,19 @@ data class TodayCheckInResponse(
     val locationId: UUID,
     val overrideReason: String?,
 )
+
+data class CheckInHistoryItem(
+    val checkInId: UUID,
+    val checkInTime: Instant,
+    val locationName: String,
+    val planName: String,
+    val session: String,
+    val status: String,
+    val method: String,
+)
+
+data class CheckInHistoryResponse(
+    val items: List<CheckInHistoryItem>,
+    val totalPages: Int,
+    val totalElements: Long,
+)

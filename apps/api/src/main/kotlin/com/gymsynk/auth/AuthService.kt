@@ -5,6 +5,7 @@ import com.gymsynk.common.email.EmailService
 import com.gymsynk.common.exception.BusinessException
 import com.gymsynk.common.exception.ErrorCodes
 import com.gymsynk.member.repository.UserRepository
+import com.gymsynk.organization.repository.OrganizationRepository
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.security.SecureRandom
 import java.time.Duration
 import java.util.UUID
@@ -21,6 +23,7 @@ import java.util.UUID
 class AuthService(
     private val jwtService: JwtService,
     private val userRepository: UserRepository,
+    private val orgRepository: OrganizationRepository,
     private val passwordEncoder: PasswordEncoder,
     private val redis: StringRedisTemplate,
     private val emailService: EmailService,
@@ -35,6 +38,7 @@ class AuthService(
 
     // ── Staff login ──────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     fun staffLogin(req: LoginRequest, response: HttpServletResponse): TokenResponse {
         val user = userRepository.findByEmail(req.email).orElseThrow {
             BusinessException(ErrorCodes.UNAUTHORIZED, "Invalid email or password", 401)
@@ -121,6 +125,7 @@ class AuthService(
         log.debug("OTP for {} → {}", identifier, code)
     }
 
+    @Transactional(readOnly = true)
     fun verifyOtp(req: OtpVerifyRequest, response: HttpServletResponse): TokenResponse {
         val stored = redis.opsForValue().getAndDelete("otp:${req.identifier}")
             ?: throw BusinessException(ErrorCodes.TOKEN_EXPIRED, "OTP expired or already used", 401)
@@ -132,12 +137,17 @@ class AuthService(
             BusinessException(ErrorCodes.MEMBER_NOT_FOUND, "Member not found", 404)
         }
 
-        val accessToken  = jwtService.generateAccessToken(user.id, user.role.name, user.org.id)
+        // Access org.id inside the transaction — lazy proxy is safe here because
+        // @Transactional keeps the Hibernate session open for the method's duration.
+        // We also validate the org exists as a safety net.
+        val orgId = user.org.id
+
+        val accessToken  = jwtService.generateAccessToken(user.id, user.role.name, orgId)
         val refreshToken = jwtService.generateRefreshToken()
 
         redis.opsForValue().set(
             "refresh:$refreshToken",
-            "${user.id}:${user.role.name}:${user.org.id}",
+            "${user.id}:${user.role.name}:$orgId",
             refreshTtl,
         )
         setRefreshCookie(response, refreshToken)

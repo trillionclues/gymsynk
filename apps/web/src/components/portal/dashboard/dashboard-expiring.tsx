@@ -2,9 +2,7 @@
 
 import type { ExpiringMembershipResponse } from '@/services/dashboard-service';
 import { EmptyBlock, FeedSkeleton, Tag, Panel } from './dashboard-ui';
-import { cn } from '@/lib/utils';
-
-const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
+import { MONO } from '@/lib/constants';
 
 export function DashboardExpiring({
   members,
