@@ -13,10 +13,7 @@ export function MemberPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      {/* Clean minimal page header */}
       <MemberPageHero onOpenRegister={() => setIsRegisterOpen(true)} />
-
-      {/* Full width Member Directory List */}
       <div className="w-full">
         <MemberListPanel
           members={directory.members}
@@ -33,14 +30,12 @@ export function MemberPage() {
         />
       </div>
 
-      {/* Progressive Registration Modal */}
       <MemberRegistrationWizard
         isOpen={isRegisterOpen}
         onClose={() => setIsRegisterOpen(false)}
         onSuccess={() => directory.reload()}
       />
 
-      {/* Detail Drawer (opens on row click) */}
       <MemberProfileDrawer
         profile={directory.selectedMember}
         loading={directory.selectedLoading}

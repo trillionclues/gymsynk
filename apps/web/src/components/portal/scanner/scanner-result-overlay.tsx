@@ -97,7 +97,6 @@ export function ScannerResultOverlay({
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Dismiss button */}
         <button
           type="button"
           onClick={onDismiss}
@@ -137,7 +136,6 @@ export function ScannerResultOverlay({
           </div>
         </div>
 
-        {/* Hint for persistent results */}
         {result.status !== 'VALID' && result.status !== 'OVERRIDE' && (
           <p className="mt-4 text-center text-xs text-[color:var(--color-text-muted)] font-medium">
             Tap anywhere or press × to dismiss

@@ -31,15 +31,12 @@ export function MemberProfileDrawer({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex justify-end">
-      {/* Full screen backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fade-up"
         onClick={onClose}
         aria-label="Close profile drawer"
       />
-      {/* Right Drawer */}
       <aside className="relative z-10 flex h-full w-full max-w-[460px] flex-col border-l border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] shadow-2xl animate-slide-in-right">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-[color:var(--color-border)] px-6 py-4">
           <div className="flex items-center gap-3">
             {!loading && member && <MemberAvatar name={fullName} size="md" />}
@@ -74,7 +71,6 @@ export function MemberProfileDrawer({
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {loading ? (
             <div className="space-y-3">
@@ -87,7 +83,6 @@ export function MemberProfileDrawer({
             </div>
           ) : profile ? (
             <>
-              {/* Contact details */}
               <div>
                 <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)]">Contact Details</p>
                 <div className="space-y-2">
@@ -97,7 +92,6 @@ export function MemberProfileDrawer({
                 </div>
               </div>
 
-              {/* Membership Details */}
               <div>
                 <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)]">Active Membership</p>
                 {membership ? (
