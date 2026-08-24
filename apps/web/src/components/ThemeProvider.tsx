@@ -1,42 +1,52 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useLayoutEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: 'light' | 'dark';
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+/**
+ * Read the stored theme synchronously.
+ * Called inside useState initialiser so the value is correct on first render —
+ * no second effect needed to "correct" the initial state.
+ * Returns 'dark' during SSR (no window) which matches the FOUC script fallback.
+ */
+function readStoredTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark';
+  const stored = localStorage.getItem('gymsynk-theme');
+  if (stored === 'light' || stored === 'dark') return stored;
+  // First visit — resolve from system and persist immediately so next refresh is stable
+  const resolved: Theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  localStorage.setItem('gymsynk-theme', resolved);
+  return resolved;
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  // Initialiser runs once on mount — reads localStorage synchronously.
+  // This means theme is already the correct value on the first render,
+  // so the effect below never "corrects" from a wrong initial state.
+  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
 
-  useEffect(() => {
-    const stored = (localStorage.getItem('gymsynk-theme') as Theme) || 'system';
-    setThemeState(stored);
-  }, []);
-
-  useEffect(() => {
+  // useLayoutEffect fires synchronously before paint — prevents any flash
+  // even if the FOUC script missed (e.g. cached page, browser extension).
+  useLayoutEffect(() => {
     const root = document.documentElement;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const resolved = theme === 'system' ? (prefersDark ? 'dark' : 'light') : theme;
-
     root.classList.remove('light', 'dark');
-    root.classList.add(resolved);
-    setResolvedTheme(resolved);
+    root.classList.add(theme);
     localStorage.setItem('gymsynk-theme', theme);
   }, [theme]);
 
   const setTheme = (t: Theme) => setThemeState(t);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

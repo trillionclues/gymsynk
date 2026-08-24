@@ -1,209 +1,271 @@
-/* GymSynk design tokens — loaded after shadcn base in layout.tsx */
+/* GymSynk design tokens — reference palette */
+/* Vocabulary: plates, tags, tape, receipts — not a generic dashboard */
 
-/* ── Light mode tokens */
+/* ── Light mode */
 :root.light {
-  --color-bg:               #f5f5f7;
-  --color-surface:          #ffffff;
-  --color-surface-2:        #f8f8fa;
-  --color-surface-3:        #efeff3;
-  --color-border:           #e8e8ed;
-  --color-border-strong:    #d1d1d9;
-  --color-border-highlight: rgba(100, 100, 120, 0.12);
-  --color-primary:          #1a1a2e;
-  --color-primary-hover:    #0f0f1a;
-  --color-primary-muted:    rgba(26, 26, 46, 0.06);
-  --color-primary-muted-hover: rgba(26, 26, 46, 0.10);
-  --color-accent:           #b45309;
-  --color-accent-hover:     #92400e;
-  --color-accent-muted:     rgba(180, 83, 9, 0.08);
-  --color-accent-muted-hover: rgba(180, 83, 9, 0.14);
-  --color-text:             #1a1a2e;
-  --color-text-strong:      #0f0f1a;
-  --color-text-muted:       #6b6b80;
-  --color-text-subtle:      #a8a8b8;
-  --color-text-on-primary:  #ffffff;
-  --color-text-on-accent:   #ffffff;
-  --color-nav-text:         #6b6b80;
-  --color-nav-text-active:  #0f0f1a;
-  --color-nav-bg-scrolled:  rgba(255, 255, 255, 0.92);
+  --charcoal:          #f5f2eb;
+  --panel:             #ffffff;
+  --panel-raised:      #f8f5ee;
+  --hairline:          #e0ddd5;
+  --hairline-soft:     #ece9e1;
+  --chalk:             #16140f;
+  --ash:               #6b6455;
+  --ash-dim:           #9e9888;
+  --rust:              #c1552b;
+  --rust-dim:          #8a3d1f;
+  --rust-soft:         #e2895c;
+  --moss:              #6b8b5e;
+  --moss-dim:          #48603e;
+  --moss-soft:         #4a7c3f;
+  --gold:              #c79a3a;
+  --gold-soft:         #a67c28;
+
+  /* Surface mapping */
+  --color-bg:               var(--charcoal);       /* #f5f2eb — warm off-white page bg */
+  --color-surface:          #edeae1;               /* slightly darker than bg — cards sit above the grid */
+  --color-surface-2:        #e6e2d8;               /* inputs, secondary panels */
+  --color-surface-3:        #dedad0;               /* hover states */
+  --color-border:           var(--hairline);
+  --color-border-strong:    #c8c4ba;
+  --color-border-highlight: rgba(193, 85, 43, 0.15);
+
+  /* Primary — near-black chalk */
+  --color-primary:          var(--chalk);
+  --color-primary-hover:    #2a2720;
+  --color-primary-muted:    rgba(22, 20, 15, 0.06);
+  --color-primary-muted-hover: rgba(22, 20, 15, 0.10);
+
+  /* Accent — rust */
+  --color-accent:           var(--rust);
+  --color-accent-hover:     var(--rust-dim);
+  --color-accent-muted:     rgba(193, 85, 43, 0.08);
+  --color-accent-muted-hover: rgba(193, 85, 43, 0.14);
+
+  /* Text */
+  --color-text:             var(--chalk);
+  --color-text-strong:      #0d0b08;
+  --color-text-muted:       var(--ash);
+  --color-text-subtle:      var(--ash-dim);
+  --color-text-on-primary:  #f3efe4;
+  --color-text-on-accent:   #f3efe4;
+
+  /* Nav */
+  --color-nav-text:         var(--ash);
+  --color-nav-text-active:  var(--chalk);
+  --color-nav-bg-scrolled:  rgba(245, 242, 235, 0.94);
+
   /* Status */
-  --color-status-valid:         #15803d;
-  --color-status-valid-bg:      rgba(21, 128, 61, 0.07);
-  --color-status-expired:       #b91c1c;
-  --color-status-expired-bg:    rgba(185, 28, 28, 0.07);
-  --color-status-override:      #b45309;
-  --color-status-override-bg:   rgba(180, 83, 9, 0.07);
-  --color-status-wrong:         #6b6b80;
-  --color-status-wrong-bg:      rgba(107, 107, 128, 0.07);
-  --color-status-duplicate:     #6d28d9;
-  --color-status-duplicate-bg:  rgba(109, 40, 217, 0.07);
+  --color-status-valid:         var(--moss-soft);
+  --color-status-valid-bg:      rgba(107, 139, 94, 0.10);
+  --color-status-expired:       var(--rust);
+  --color-status-expired-bg:    rgba(193, 85, 43, 0.08);
+  --color-status-override:      var(--gold);
+  --color-status-override-bg:   rgba(199, 154, 58, 0.10);
+  --color-status-wrong:         var(--ash);
+  --color-status-wrong-bg:      rgba(107, 100, 85, 0.08);
+  --color-status-duplicate:     #7c5cbf;
+  --color-status-duplicate-bg:  rgba(124, 92, 191, 0.08);
+
   /* Plans */
-  --color-plan-daily:       #9a3412;
-  --color-plan-daily-bg:    rgba(154, 52, 18, 0.07);
-  --color-plan-weekly:      #1d4ed8;
-  --color-plan-weekly-bg:   rgba(29, 78, 216, 0.07);
-  --color-plan-monthly:     #15803d;
-  --color-plan-monthly-bg:  rgba(21, 128, 61, 0.07);
-  --color-plan-custom:      #6d28d9;
-  --color-plan-custom-bg:   rgba(109, 40, 217, 0.07);
+  --color-plan-daily:       var(--rust-soft);
+  --color-plan-daily-bg:    rgba(226, 137, 92, 0.10);
+  --color-plan-weekly:      #4a7abf;
+  --color-plan-weekly-bg:   rgba(74, 122, 191, 0.10);
+  --color-plan-monthly:     var(--moss-soft);
+  --color-plan-monthly-bg:  rgba(107, 139, 94, 0.10);
+  --color-plan-custom:      #7c5cbf;
+  --color-plan-custom-bg:   rgba(124, 92, 191, 0.10);
+
   /* Sessions */
-  --color-session-morning:  #b45309;
-  --color-session-morning-bg: rgba(180, 83, 9, 0.07);
-  --color-session-evening:  #374151;
-  --color-session-evening-bg: rgba(55, 65, 81, 0.07);
-  /* Shadows */
-  --color-shadow:           rgba(0, 0, 0, 0.05);
-  --color-shadow-md:        rgba(0, 0, 0, 0.09);
-  --color-shadow-lg:        rgba(0, 0, 0, 0.13);
-  --color-grid-line:        rgba(0, 0, 0, 0.025);
-  --color-logo-line:        #0f0f1a;
-  --color-overlay:          rgba(0, 0, 0, 0.30);
-  /* Chart accent */
-  --color-chart-primary:    #b45309;
-  --color-chart-secondary:  #1d4ed8;
+  --color-session-morning:  var(--gold);
+  --color-session-morning-bg: rgba(199, 154, 58, 0.10);
+  --color-session-evening:  var(--ash);
+  --color-session-evening-bg: rgba(107, 100, 85, 0.08);
+
+  /* Util */
+  --color-shadow:           rgba(0, 0, 0, 0.04);
+  --color-shadow-md:        rgba(0, 0, 0, 0.07);
+  --color-shadow-lg:        rgba(0, 0, 0, 0.10);
+  --color-grid-line:        rgba(22, 20, 15, 0.035);
+  --color-logo-line:        var(--chalk);
+  --color-overlay:          rgba(22, 20, 15, 0.50);
+  --color-chart-primary:    var(--rust);
+  --color-chart-secondary:  var(--moss);
+
+  /* KPI plate accent rings */
+  --color-plate-rust-border: var(--rust-dim);
+  --color-plate-rust-text:   var(--rust-soft);
+  --color-plate-moss-border: var(--moss-dim);
+  --color-plate-moss-text:   var(--moss-soft);
+  --color-plate-gold-border: #8a6b25;
+  --color-plate-gold-text:   var(--gold);
 }
 
-/* ── Dark mode tokens */
+/* ── Dark mode */
 :root.dark {
-  --color-bg:               #0c0c10;
-  --color-surface:          #131318;
-  --color-surface-2:        #1a1a22;
-  --color-surface-3:        #202028;
-  --color-border:           #2a2a36;
-  --color-border-strong:    #3d3d4f;
-  --color-border-highlight: rgba(160, 160, 200, 0.12);
-  --color-primary:          #f0f0f8;
-  --color-primary-hover:    #e0e0ee;
-  --color-primary-muted:    rgba(240, 240, 248, 0.07);
-  --color-primary-muted-hover: rgba(240, 240, 248, 0.12);
-  --color-accent:           #e09020;
-  --color-accent-hover:     #c07818;
-  --color-accent-muted:     rgba(224, 144, 32, 0.10);
-  --color-accent-muted-hover: rgba(224, 144, 32, 0.18);
-  --color-text:             #c8c8d8;
-  --color-text-strong:      #f0f0f8;
-  --color-text-muted:       #6e6e88;
-  --color-text-subtle:      #4a4a60;
-  --color-text-on-primary:  #0c0c10;
-  --color-text-on-accent:   #0c0c10;
-  --color-nav-text:         #4a4a60;
-  --color-nav-text-active:  #f0f0f8;
-  --color-nav-bg-scrolled:  rgba(12, 12, 16, 0.92);
-  /* Status */
-  --color-status-valid:         #4ade80;
-  --color-status-valid-bg:      rgba(74, 222, 128, 0.08);
-  --color-status-expired:       #f87171;
-  --color-status-expired-bg:    rgba(248, 113, 113, 0.08);
-  --color-status-override:      #fbbf24;
-  --color-status-override-bg:   rgba(251, 191, 36, 0.08);
-  --color-status-wrong:         #4a4a60;
-  --color-status-wrong-bg:      rgba(74, 74, 96, 0.08);
-  --color-status-duplicate:     #a78bfa;
-  --color-status-duplicate-bg:  rgba(167, 139, 250, 0.08);
-  /* Plans */
-  --color-plan-daily:       #fb923c;
-  --color-plan-daily-bg:    rgba(251, 146, 60, 0.08);
-  --color-plan-weekly:      #60a5fa;
-  --color-plan-weekly-bg:   rgba(96, 165, 250, 0.08);
-  --color-plan-monthly:     #4ade80;
-  --color-plan-monthly-bg:  rgba(74, 222, 128, 0.08);
-  --color-plan-custom:      #a78bfa;
-  --color-plan-custom-bg:   rgba(167, 139, 250, 0.08);
-  /* Sessions */
-  --color-session-morning:  #e09020;
-  --color-session-morning-bg: rgba(224, 144, 32, 0.10);
-  --color-session-evening:  #6e6e88;
-  --color-session-evening-bg: rgba(110, 110, 136, 0.10);
-  /* Shadows */
-  --color-shadow:           rgba(0, 0, 0, 0.45);
-  --color-shadow-md:        rgba(0, 0, 0, 0.60);
-  --color-shadow-lg:        rgba(0, 0, 0, 0.75);
+  --charcoal:          #16140f;
+  --panel:             #1d1b16;
+  --panel-raised:      #242019;
+  --hairline:          #34302a;
+  --hairline-soft:     #28251f;
+  --chalk:             #f3efe4;
+  --ash:               #8e8778;
+  --ash-dim:           #635d51;
+  --rust:              #c1552b;
+  --rust-dim:          #8a3d1f;
+  --rust-soft:         #e2895c;
+  --moss:              #6b8b5e;
+  --moss-dim:          #48603e;
+  --moss-soft:         #9fbb8e;
+  --gold:              #c79a3a;
+  --gold-soft:         #e0bd6b;
+
+  --color-bg:               var(--charcoal);
+  --color-surface:          var(--panel);
+  --color-surface-2:        var(--panel-raised);
+  --color-surface-3:        #2a271f;
+  --color-border:           var(--hairline);
+  --color-border-strong:    #4a4540;
+  --color-border-highlight: rgba(193, 85, 43, 0.20);
+
+  --color-primary:          var(--chalk);
+  --color-primary-hover:    #e0dcc8;
+  --color-primary-muted:    rgba(243, 239, 228, 0.07);
+  --color-primary-muted-hover: rgba(243, 239, 228, 0.12);
+
+  --color-accent:           var(--rust);
+  --color-accent-hover:     var(--rust-soft);
+  --color-accent-muted:     rgba(193, 85, 43, 0.10);
+  --color-accent-muted-hover: rgba(193, 85, 43, 0.18);
+
+  --color-text:             var(--chalk);
+  --color-text-strong:      #f8f4ea;
+  --color-text-muted:       var(--ash);
+  --color-text-subtle:      var(--ash-dim);
+  --color-text-on-primary:  var(--charcoal);
+  --color-text-on-accent:   #f3efe4;
+
+  --color-nav-text:         var(--ash-dim);
+  --color-nav-text-active:  var(--chalk);
+  --color-nav-bg-scrolled:  rgba(22, 20, 15, 0.94);
+
+  --color-status-valid:         var(--moss-soft);
+  --color-status-valid-bg:      rgba(107, 139, 94, 0.12);
+  --color-status-expired:       var(--rust-soft);
+  --color-status-expired-bg:    rgba(193, 85, 43, 0.10);
+  --color-status-override:      var(--gold-soft);
+  --color-status-override-bg:   rgba(199, 154, 58, 0.10);
+  --color-status-wrong:         var(--ash);
+  --color-status-wrong-bg:      rgba(142, 135, 120, 0.08);
+  --color-status-duplicate:     #b39ddf;
+  --color-status-duplicate-bg:  rgba(179, 157, 223, 0.08);
+
+  --color-plan-daily:       var(--rust-soft);
+  --color-plan-daily-bg:    rgba(226, 137, 92, 0.10);
+  --color-plan-weekly:      #7eaadf;
+  --color-plan-weekly-bg:   rgba(126, 170, 223, 0.10);
+  --color-plan-monthly:     var(--moss-soft);
+  --color-plan-monthly-bg:  rgba(159, 187, 142, 0.10);
+  --color-plan-custom:      #b39ddf;
+  --color-plan-custom-bg:   rgba(179, 157, 223, 0.10);
+
+  --color-session-morning:  var(--gold-soft);
+  --color-session-morning-bg: rgba(224, 189, 107, 0.10);
+  --color-session-evening:  var(--ash);
+  --color-session-evening-bg: rgba(142, 135, 120, 0.08);
+
+  --color-shadow:           rgba(0, 0, 0, 0.40);
+  --color-shadow-md:        rgba(0, 0, 0, 0.55);
+  --color-shadow-lg:        rgba(0, 0, 0, 0.70);
   --color-grid-line:        rgba(255, 255, 255, 0.02);
-  --color-logo-line:        #f0f0f8;
-  --color-overlay:          rgba(0, 0, 0, 0.60);
-  /* Chart accent */
-  --color-chart-primary:    #e09020;
-  --color-chart-secondary:  #60a5fa;
+  --color-logo-line:        var(--chalk);
+  --color-overlay:          rgba(0, 0, 0, 0.65);
+  --color-chart-primary:    var(--rust-soft);
+  --color-chart-secondary:  var(--moss-soft);
+
+  --color-plate-rust-border: var(--rust-dim);
+  --color-plate-rust-text:   var(--rust-soft);
+  --color-plate-moss-border: var(--moss-dim);
+  --color-plate-moss-text:   var(--moss-soft);
+  --color-plate-gold-border: #8a6b25;
+  --color-plate-gold-text:   var(--gold-soft);
 }
 
-/* ── Base overrides */
-html {
-  scroll-behavior: smooth;
-  text-size-adjust: 100%;
-}
+/* ── Base */
+html { scroll-behavior: smooth; text-size-adjust: 100%; }
 
 body {
-  background-color: var(--color-bg);
+  background: var(--color-bg);
   color: var(--color-text);
-  font-feature-settings: "cv11", "ss01";
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle dot grid — lighter than before */
+/* Square grid overlay */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(circle, var(--color-grid-line) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-image:
+    linear-gradient(var(--color-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
+  background-size: 60px 60px;
   pointer-events: none;
   z-index: 0;
 }
 
-#__next,
-main,
-.layout-root {
-  position: relative;
-  z-index: 1;
-}
+#__next, main, .layout-root { position: relative; z-index: 1; }
 
-/* ── Focus ring */
+/* ── Focus ring — rust accent */
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 0px;
 }
 
 /* ── Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover { background: var(--color-text-subtle); }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ash); }
 
-/* ── Nav underline active indicator (used in top-nav) */
-.nav-active-indicator {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--color-accent);
-}
-
-/* ── Animate-in utility */
+/* ── Animations */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-up { animation: fade-up 0.25s ease-out both; }
+.animate-fade-up { animation: fade-up 0.2s ease-out both; }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(24px); }
+  from { opacity: 0; transform: translateX(20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-.animate-slide-in-right { animation: slide-in-right 0.25s ease-out both; }
+.animate-slide-in-right { animation: slide-in-right 0.22s ease-out both; }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
 }
-.animate-scale-in { animation: scale-in 0.2s ease-out both; }
+.animate-scale-in { animation: scale-in 0.18s ease-out both; }
 
 @keyframes scan {
   0%   { top: 0; }
   50%  { top: calc(100% - 2px); }
   100% { top: 0; }
+}
+.animate-scan { animation: scan 2s linear infinite; }
+
+/* ── Typography utility classes */
+.font-display { font-family: var(--font-display), 'Arial Narrow', sans-serif; }
+.font-body    { font-family: var(--font-body),    -apple-system, sans-serif; }
+.font-mono    { font-family: var(--font-mono),    ui-monospace, monospace; }
+
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
 }
