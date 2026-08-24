@@ -6,7 +6,6 @@ import com.gymsynk.common.exception.BusinessException
 import com.gymsynk.common.exception.ErrorCodes
 import com.gymsynk.member.repository.UserRepository
 import com.gymsynk.organization.repository.OrganizationRepository
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -93,12 +92,10 @@ class AuthService(
 
     fun logout(request: HttpServletRequest, response: HttpServletResponse) {
         extractRefreshCookie(request)?.let { redis.delete("refresh:$it") }
-        response.addCookie(Cookie(refreshCookieName, "").apply {
-            isHttpOnly = true
-            secure     = false
-            path       = "/"
-            maxAge     = 0
-        })
+        response.addHeader(
+            "Set-Cookie",
+            "refresh_token=; HttpOnly; Path=/; Max-Age=0; SameSite=None; Secure",
+        )
     }
 
     // ── Member OTP login ─────────────────────────────────────────────────────
@@ -157,12 +154,14 @@ class AuthService(
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun setRefreshCookie(response: HttpServletResponse, token: String) {
-        response.addCookie(Cookie(refreshCookieName, token).apply {
-            isHttpOnly = true
-            secure     = false   // true behind HTTPS in production
-            path       = "/"
-            maxAge     = refreshTtl.seconds.toInt()
-        })
+        // SameSite=None; Secure is required when frontend and API are on different
+        // origins (e.g. Vercel frontend + ngrok/prod API). Spring's Cookie API
+        // doesn't support SameSite directly — set it via the raw header.
+        val maxAge = refreshTtl.seconds.toInt()
+        val secure = true   // ngrok and Vercel are both HTTPS
+        val cookie = "refresh_token=$token; HttpOnly; Path=/; Max-Age=$maxAge;" +
+                     " SameSite=None${if (secure) "; Secure" else ""}"
+        response.addHeader("Set-Cookie", cookie)
     }
 
     private fun extractRefreshCookie(request: HttpServletRequest): String? =
