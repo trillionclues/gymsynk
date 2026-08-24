@@ -1,8 +1,10 @@
 'use client';
 
-import { LoaderCircle, RefreshCw, UserCheck } from 'lucide-react';
+import { LoaderCircle, RefreshCw } from 'lucide-react';
 import type { TodayCheckInResponse } from '@/services/dashboard-service';
-import { EmptyBlock, FeedSkeleton, MemberAvatar, Panel, StatusPill } from './dashboard-ui';
+import { Chit, EmptyBlock, FeedSkeleton, Tag, Panel } from './dashboard-ui';
+
+const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
 
 export function DashboardFeed({
   checkIns,
@@ -21,89 +23,103 @@ export function DashboardFeed({
 }) {
   return (
     <Panel
-      title="Live check-in feed"
-      subtitle={live ? 'Real-time via WebSocket' : 'Polling — WebSocket stream connected'}
+      title="Live Check-in Feed"
+      subtitle={live ? 'Websocket connected' : 'Polling — websocket connecting'}
       action={
         <div className="flex items-center gap-2">
           {live && (
-            <span className="flex items-center gap-1.5 rounded-full bg-[color:var(--color-status-valid-bg)] px-2.5 py-1 text-[10px] font-semibold text-[color:var(--color-status-valid)]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-status-valid)] animate-pulse" />
+            <span
+              className="inline-flex items-center gap-1.5 border px-[8px] py-[4px] text-[10px] uppercase tracking-[0.08em]"
+              style={{ ...MONO, color: 'var(--color-status-valid)', borderColor: 'var(--color-plate-moss-border)' }}
+            >
+              <span
+                className="h-[6px] w-[6px] animate-pulse"
+                style={{ background: 'var(--color-status-valid)' }}
+              />
               Live
             </span>
           )}
           <button
             type="button"
             onClick={onRefresh}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--color-text-strong)] transition hover:border-[color:var(--color-border-strong)] cursor-pointer"
+            className="inline-flex items-center gap-[6px] border border-[color:var(--color-border)] px-[14px] py-[8px] text-[11px] uppercase tracking-[0.08em] transition hover:border-[color:var(--color-border-strong)]"
+            style={{ ...MONO, color: 'var(--color-text)' }}
           >
-            {refreshing ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            {refreshing
+              ? <LoaderCircle className="h-3 w-3 animate-spin" />
+              : <RefreshCw className="h-3 w-3" />}
             Refresh
           </button>
         </div>
       }
     >
-      <div className="space-y-2">
+      {/* Remove the inner padding from Panel for feed rows */}
+      <div className="-mx-[22px] -mt-[22px] -mb-[22px]">
         {loading && !checkIns.length ? (
           <FeedSkeleton />
         ) : checkIns.length ? (
           checkIns.map((entry) => (
-            <CheckInRow
+            <FeedRow
               key={entry.checkInId}
               entry={entry}
               onInspect={onInspectMember ? () => onInspectMember(entry.memberNumber) : undefined}
             />
           ))
         ) : (
-          <EmptyBlock
-            title="No check-ins yet"
-            body="As soon as today's first scan lands, it will appear here."
-          />
+          <div className="px-[22px] py-[22px]">
+            <EmptyBlock
+              title="No check-ins yet"
+              body="The first scan of the day will appear here."
+            />
+          </div>
         )}
       </div>
     </Panel>
   );
 }
 
-
-function CheckInRow({
+function FeedRow({
   entry,
   onInspect,
 }: {
   entry: TodayCheckInResponse;
   onInspect?: () => void;
 }) {
+  const time = new Date(entry.checkInTime).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+
   return (
     <div
       onClick={onInspect}
-      className={`flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-4 py-3 transition hover:bg-[color:var(--color-surface-3)] ${
-        onInspect ? 'cursor-pointer' : ''
-      }`}
+      className="flex items-center justify-between gap-[14px] border-b border-[color:var(--color-border)] px-[22px] py-[14px] last:border-0 hover:bg-[color:var(--color-surface-2)] transition-colors"
+      style={{ cursor: onInspect ? 'pointer' : 'default' }}
     >
-      <MemberAvatar name={entry.memberName} />
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2">
-          <p className="text-sm font-medium text-[color:var(--color-text-strong)] truncate">{entry.memberName}</p>
-          <span className="text-xs text-[color:var(--color-text-muted)]">{entry.memberNumber}</span>
-        </div>
-        <p className="mt-0.5 text-xs text-[color:var(--color-text-muted)]">
-          {entry.planName} · {entry.session} · {entry.method}
-        </p>
-      </div>
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        <StatusPill value={entry.status} />
-        <div className="flex items-center gap-2">
-          <p className="text-[10px] text-[color:var(--color-text-muted)]">
-            {new Date(entry.checkInTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-          </p>
-          {onInspect && (
-            <span className="text-[10px] font-semibold text-[color:var(--color-accent)] hover:underline">
-              Inspect →
+      {/* Left — tag + name + meta */}
+      <div className="flex min-w-0 items-center gap-[14px]">
+        <Tag name={entry.memberName} />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[14px] font-semibold truncate" style={{ color: 'var(--color-text-strong)' }}>
+              {entry.memberName}
             </span>
-          )}
+            <span className="text-[11px] shrink-0" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+              {entry.memberNumber}
+            </span>
+          </div>
+          <p className="mt-[2px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+            {entry.planName} · {entry.session} · {entry.method}
+          </p>
         </div>
-        {entry.overrideReason ? (
-          <p className="text-[10px] text-[color:var(--color-status-override)]">Override</p>
-        ) : null}
+      </div>
+
+      {/* Right — chit + time */}
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <Chit value={entry.status} />
+        <span className="text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+          {time}
+        </span>
       </div>
     </div>
   );

@@ -1,7 +1,15 @@
 import type { ComponentType, ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowRight, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const PANEL =
+  'border border-[color:var(--color-border)] bg-[color:var(--color-surface)]';
+
+const PANEL_HEAD =
+  'flex items-start justify-between gap-4 border-b border-[color:var(--color-border)] px-[22px] py-[18px]';
+
+const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
+const DISPLAY: React.CSSProperties = { fontFamily: 'var(--font-display)', textTransform: 'uppercase' };
 
 export function ActionLink({
   href,
@@ -15,11 +23,11 @@ export function ActionLink({
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2.5 text-sm font-medium text-[color:var(--color-text-strong)] shadow-sm transition hover:border-[color:var(--color-border-strong)] hover:shadow-md"
+      className="inline-flex items-center gap-2 border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-[18px] py-[11px] text-[11px] transition hover:border-[color:var(--color-border-strong)]"
+      style={MONO}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-[13px] w-[13px]" />
       {label}
-      <ArrowRight className="h-3.5 w-3.5 text-[color:var(--color-text-muted)]" />
     </Link>
   );
 }
@@ -38,21 +46,25 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={cn('rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_1px_4px_var(--color-shadow)]', className)}>
-      <div className="flex items-start justify-between gap-4 border-b border-[color:var(--color-border)] px-5 py-4">
+    <section className={cn(PANEL, className)}>
+      <div className={PANEL_HEAD}>
         <div>
-          <h3 className="text-sm font-semibold text-[color:var(--color-text-strong)]">{title}</h3>
-          {subtitle ? <p className="mt-0.5 text-xs text-[color:var(--color-text-muted)]">{subtitle}</p> : null}
+          <h3 className="text-[19px] font-bold" style={DISPLAY}>{title}</h3>
+          {subtitle ? (
+            <p className="mt-[2px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+              {subtitle}
+            </p>
+          ) : null}
         </div>
         {action}
       </div>
-      <div className="p-5">{children}</div>
+      <div className="px-[22px] py-[22px]">{children}</div>
     </section>
   );
 }
 
 export function StatCard({
-  icon: Icon,
+  icon: _Icon,
   label,
   value,
   accent,
@@ -62,31 +74,66 @@ export function StatCard({
   label: string;
   value: string;
   accent: 'valid' | 'monthly' | 'weekly' | 'override';
-  trend?: string; // e.g. "+12% today"
+  trend?: string;
 }) {
-  const iconTone = {
-    valid:    'bg-[color:var(--color-status-valid-bg)]   text-[color:var(--color-status-valid)]',
-    monthly:  'bg-[color:var(--color-plan-monthly-bg)]   text-[color:var(--color-plan-monthly)]',
-    weekly:   'bg-[color:var(--color-plan-weekly-bg)]    text-[color:var(--color-plan-weekly)]',
-    override: 'bg-[color:var(--color-status-override-bg)] text-[color:var(--color-status-override)]',
-  }[accent];
+  const plateStyle: Record<string, React.CSSProperties> = {
+    valid:    { borderColor: 'var(--color-plate-moss-border)', color: 'var(--color-plate-moss-text)' },
+    monthly:  { borderColor: 'var(--color-plate-moss-border)', color: 'var(--color-plate-moss-text)' },
+    weekly:   { borderColor: 'var(--color-plate-gold-border)', color: 'var(--color-plate-gold-text)' },
+    override: { borderColor: 'var(--color-plate-rust-border)', color: 'var(--color-plate-rust-text)' },
+  };
+
+  const kpiAccent: Record<string, string> = {
+    valid:    'rust',
+    monthly:  'moss',
+    weekly:   'gold',
+    override: 'rust',
+  };
+
+  const dotBg: Record<string, React.CSSProperties> = {
+    rust:  { background: 'var(--color-status-expired)' },
+    moss:  { background: 'var(--color-status-valid)' },
+    gold:  { background: 'var(--color-status-override)' },
+  };
+
+  const tone = kpiAccent[accent] ?? 'rust';
 
   return (
-    <div className="rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-5 shadow-[0_1px_4px_var(--color-shadow)] transition hover:shadow-[0_4px_12px_var(--color-shadow-md)]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-[color:var(--color-text-muted)] uppercase tracking-wide">{label}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-[color:var(--color-text-strong)]">{value}</p>
-          {trend ? (
-            <p className="mt-1.5 flex items-center gap-1 text-xs text-[color:var(--color-status-valid)]">
-              <TrendingUp className="h-3 w-3" />
-              {trend}
-            </p>
-          ) : null}
-        </div>
-        <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', iconTone)}>
-          <Icon className="h-5 w-5" />
-        </div>
+    <div
+      className="flex items-center gap-5 border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-[26px]"
+    >
+      {/* Plate ring */}
+      <div
+        className="relative flex h-[74px] w-[74px] shrink-0 items-center justify-center rounded-full border"
+        style={plateStyle[accent]}
+      >
+        {/* Inner dashed ring */}
+        <div
+          className="pointer-events-none absolute inset-[8px] rounded-full border border-dashed"
+          style={{ borderColor: 'var(--color-border)' }}
+        />
+        <span
+          className="relative z-10 text-[26px] font-extrabold leading-none"
+          style={{ ...DISPLAY, fontSize: '26px' }}
+        >
+          {value}
+        </span>
+      </div>
+
+      {/* Label + trend */}
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.10em]" style={{ ...MONO, color: 'var(--color-text-muted)' }}>
+          {label}
+        </p>
+        {trend ? (
+          <p className="mt-[6px] flex items-center gap-1.5 text-[13px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={dotBg[tone]}
+            />
+            {trend}
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -94,76 +141,164 @@ export function StatCard({
 
 export function EmptyBlock({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-[color:var(--color-border)] px-5 py-10 text-center">
-      <p className="text-sm font-medium text-[color:var(--color-text-strong)]">{title}</p>
-      <p className="mt-1.5 text-xs leading-5 text-[color:var(--color-text-muted)]">{body}</p>
+    <div
+      className="border border-dashed border-[color:var(--color-border)] px-5 py-[30px] text-center"
+    >
+      <p className="text-[18px] font-bold" style={{ ...DISPLAY, color: 'var(--color-text-strong)' }}>
+        {title}
+      </p>
+      <p className="mt-[6px] text-[13px]" style={{ color: 'var(--color-text-subtle)' }}>
+        {body}
+      </p>
     </div>
   );
 }
 
 export function FeedSkeleton({ compact }: { compact?: boolean } = {}) {
   return (
-    <div className={cn('space-y-2', compact && 'space-y-1.5')}>
-      {Array.from({ length: compact ? 3 : 5 }).map((_, i) => (
+    <div className="space-y-px">
+      {Array.from({ length: compact ? 3 : 4 }).map((_, i) => (
         <div
           key={i}
-          className="animate-pulse flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-4 py-3.5"
+          className="animate-pulse flex items-center gap-[14px] border-b border-[color:var(--color-border)] px-[22px] py-[14px]"
         >
-          <div className="h-8 w-8 rounded-full bg-[color:var(--color-border)]" />
-          <div className="flex-1 space-y-1.5">
-            <div className="h-3 w-28 rounded-full bg-[color:var(--color-border)]" />
-            <div className="h-2.5 w-44 rounded-full bg-[color:var(--color-border)]" />
+          {/* Tag square */}
+          <div className="h-[38px] w-[38px] shrink-0 bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)]" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-28 bg-[color:var(--color-border)]" />
+            <div className="h-2.5 w-44 bg-[color:var(--color-border)]" />
           </div>
-          <div className="h-3 w-12 rounded-full bg-[color:var(--color-border)]" />
+          <div className="h-[22px] w-14 bg-[color:var(--color-border)]" />
         </div>
       ))}
     </div>
   );
 }
 
-export function StatusPill({ value }: { value: string }) {
-  const tone =
-    {
-      VALID:              'bg-[color:var(--color-status-valid-bg)]     text-[color:var(--color-status-valid)]',
-      EXPIRED_PLAN:       'bg-[color:var(--color-status-expired-bg)]   text-[color:var(--color-status-expired)]',
-      OVERRIDE:           'bg-[color:var(--color-status-override-bg)]  text-[color:var(--color-status-override)]',
-      WRONG_SESSION:      'bg-[color:var(--color-status-wrong-bg)]     text-[color:var(--color-status-wrong)]',
-      WRONG_DAY:          'bg-[color:var(--color-status-wrong-bg)]     text-[color:var(--color-status-wrong)]',
-      ALREADY_CHECKED_IN: 'bg-[color:var(--color-status-duplicate-bg)] text-[color:var(--color-status-duplicate)]',
-    }[value] ?? 'bg-[color:var(--color-status-wrong-bg)] text-[color:var(--color-status-wrong)]';
+export function Chit({ value }: { value: string }) {
+  type ChitTone = { color: string; borderColor: string; dotBg: string };
 
-  const label =
-    {
-      VALID: 'Valid',
-      EXPIRED_PLAN: 'Expired',
-      OVERRIDE: 'Override',
-      WRONG_SESSION: 'Wrong session',
-      WRONG_DAY: 'Wrong day',
-      ALREADY_CHECKED_IN: 'Duplicate',
-    }[value] ?? value;
+  const tones: Record<string, ChitTone> = {
+    VALID: {
+      color:       'var(--color-status-valid)',
+      borderColor: 'var(--color-plate-moss-border)',
+      dotBg:       'var(--color-status-valid)',
+    },
+    EXPIRED_PLAN: {
+      color:       'var(--color-status-expired)',
+      borderColor: 'var(--color-plate-rust-border)',
+      dotBg:       'var(--color-status-expired)',
+    },
+    OVERRIDE: {
+      color:       'var(--color-status-override)',
+      borderColor: 'var(--color-plate-gold-border)',
+      dotBg:       'var(--color-status-override)',
+    },
+    WRONG_SESSION: {
+      color:       'var(--color-text-subtle)',
+      borderColor: 'var(--color-border)',
+      dotBg:       'var(--color-text-subtle)',
+    },
+    WRONG_DAY: {
+      color:       'var(--color-text-subtle)',
+      borderColor: 'var(--color-border)',
+      dotBg:       'var(--color-text-subtle)',
+    },
+    ALREADY_CHECKED_IN: {
+      color:       'var(--color-status-duplicate)',
+      borderColor: 'var(--color-status-duplicate-bg)',
+      dotBg:       'var(--color-status-duplicate)',
+    },
+  };
+
+  const labels: Record<string, string> = {
+    VALID:              'Valid',
+    EXPIRED_PLAN:       'Expired',
+    OVERRIDE:           'Override',
+    WRONG_SESSION:      'Wrong session',
+    WRONG_DAY:          'Wrong day',
+    ALREADY_CHECKED_IN: 'Duplicate',
+  };
+
+  const tone = tones[value] ?? tones.WRONG_SESSION;
+  const label = labels[value] ?? value;
 
   return (
-    <span className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none', tone)}>
+    <span
+      className="inline-flex items-center gap-[6px] border px-[8px] py-[4px] text-[10px] uppercase tracking-[0.08em]"
+      style={{ ...MONO, color: tone.color, borderColor: tone.borderColor }}
+    >
+      <span
+        className="h-[6px] w-[6px] shrink-0"
+        style={{ background: tone.dotBg }}
+      />
       {label}
     </span>
   );
 }
+export const StatusPill = Chit;
 
-export function MemberAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
+export function Tag({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
   const initials = name
     .split(' ')
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? '')
     .join('');
+
+  const dim = size === 'sm' ? 'h-[34px] w-[34px] text-[11px]'
+            : size === 'lg' ? 'h-[52px] w-[52px] text-[16px]'
+            : 'h-[38px] w-[38px] text-[12px]';
+
   return (
     <div
-      className={cn(
-        'flex shrink-0 items-center justify-center rounded-full bg-[color:var(--color-primary-muted)] text-[color:var(--color-text-strong)] font-semibold',
-        size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-9 w-9 text-xs',
-      )}
+      className={cn('relative flex shrink-0 items-center justify-center border border-[color:var(--color-border)]', dim)}
+      style={{ ...MONO, color: 'var(--color-text-muted)', background: 'var(--color-surface-2)', flexShrink: 0 }}
     >
       {initials}
+      {/* Dot accent */}
+      <span
+        className="absolute right-[3px] top-[3px] h-[3px] w-[3px] border border-[color:var(--color-border)]"
+        style={{ borderRadius: '50%' }}
+      />
     </div>
+  );
+}
+
+export function MemberAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
+  return <Tag name={name} size={size} />;
+}
+
+export function Btn({
+  children,
+  primary,
+  onClick,
+  type = 'button',
+  disabled,
+  className,
+}: {
+  children: ReactNode;
+  primary?: boolean;
+  onClick?: () => void;
+  type?: 'button' | 'submit';
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'inline-flex cursor-pointer items-center gap-2 border px-[18px] py-[11px] text-[11px] uppercase tracking-[0.09em] transition disabled:cursor-not-allowed disabled:opacity-40',
+        primary
+          ? 'border-[color:var(--color-primary)] bg-[color:var(--color-primary)] text-[color:var(--color-text-on-primary)] hover:opacity-90'
+          : 'border-[color:var(--color-border)] bg-transparent text-[color:var(--color-text)] hover:border-[color:var(--color-border-strong)]',
+        className,
+      )}
+      style={MONO}
+    >
+      {children}
+    </button>
   );
 }
 

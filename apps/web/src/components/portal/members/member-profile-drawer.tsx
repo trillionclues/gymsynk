@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Calendar, Phone, Mail, Hash, ShieldCheck, ShieldX } from 'lucide-react';
+import { Calendar, Phone, Mail, Hash, ShieldCheck } from 'lucide-react';
 import type { MemberProfileResponse } from '@/services/member-service';
 import { cn } from '@/lib/utils';
-import { MemberAvatar } from '../dashboard/dashboard-ui';
+
+const MONO: React.CSSProperties    = { fontFamily: 'var(--font-mono)' };
+const DISPLAY: React.CSSProperties = { fontFamily: 'var(--font-display)', textTransform: 'uppercase' };
 
 export function MemberProfileDrawer({
   profile,
@@ -17,95 +19,115 @@ export function MemberProfileDrawer({
   onClose: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  if ((!profile && !loading) || !mounted) return null;
 
-  if (!profile && !loading) return null;
-  if (!mounted) return null;
-
-  const member = profile?.member;
+  const member     = profile?.member;
   const membership = profile?.activeMembership;
-  const fullName = member ? `${member.firstName} ${member.lastName}` : 'Loading…';
+  const fullName   = member ? `${member.firstName} ${member.lastName}` : 'Loading…';
+
+  const initials = fullName
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('');
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex justify-end">
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fade-up"
+        className="fixed inset-0 transition-opacity"
+        style={{ background: 'var(--color-overlay)' }}
         onClick={onClose}
         aria-label="Close profile drawer"
       />
-      <aside className="relative z-10 flex h-full w-full max-w-[460px] flex-col border-l border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] shadow-2xl animate-slide-in-right">
-        <div className="flex items-center justify-between border-b border-[color:var(--color-border)] px-6 py-4">
-          <div className="flex items-center gap-3">
-            {!loading && member && <MemberAvatar name={fullName} size="md" />}
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">
-                Member Profile
-              </p>
-              <h2 className="text-base font-bold tracking-tight text-[color:var(--color-text-strong)]">
-                {loading ? 'Loading…' : fullName}
-              </h2>
-              {member && (
-                <div className="mt-1 flex items-center gap-1.5">
-                  {member.isActive ? (
-                    <span className="flex items-center gap-1 rounded-full bg-[color:var(--color-status-valid-bg)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--color-status-valid)]">
-                      <ShieldCheck className="h-3 w-3" /> Active
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 rounded-full bg-[color:var(--color-status-expired-bg)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--color-status-expired)]">
-                      <ShieldX className="h-3 w-3" /> Inactive
-                    </span>
-                  )}
-                </div>
-              )}
+
+      <aside
+        className="animate-slide-in-right relative z-10 flex h-full w-full max-w-[340px] flex-col border-l"
+        style={{
+          borderColor: 'var(--color-border)',
+          background:  'var(--color-surface)',
+          color:       'var(--color-text)',
+        }}
+      >
+         <div
+          className="flex items-start justify-between border-b px-[26px] py-[22px]"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          <div>
+            <div
+              className="mb-3 flex h-[52px] w-[52px] items-center justify-center border text-[16px]"
+              style={{
+                ...MONO,
+                borderColor: 'var(--color-border)',
+                background:  'var(--color-surface-2)',
+                color:       'var(--color-text-muted)',
+              }}
+            >
+              {loading ? '…' : initials}
             </div>
+
+            <h2 className="text-[24px] font-extrabold leading-none" style={DISPLAY}>
+              {loading ? '—' : fullName}
+            </h2>
+
+            {member && (
+              <span
+                className="mt-2 inline-flex items-center gap-[6px] border px-[8px] py-[4px] text-[10px] uppercase tracking-[0.08em]"
+                style={{
+                  ...MONO,
+                  color:       member.isActive ? 'var(--color-status-valid)'       : 'var(--color-status-expired)',
+                  borderColor: member.isActive ? 'var(--color-plate-moss-border)'  : 'var(--color-plate-rust-border)',
+                }}
+              >
+                <span
+                  className="h-[6px] w-[6px] shrink-0"
+                  style={{ background: member.isActive ? 'var(--color-status-valid)' : 'var(--color-status-expired)' }}
+                />
+                {member.isActive ? 'Active' : 'Inactive'}
+              </span>
+            )}
           </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] text-[color:var(--color-text-muted)] transition hover:text-[color:var(--color-text-strong)] cursor-pointer"
+            className="flex h-[26px] w-[26px] items-center justify-center border transition hover:opacity-80"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
           >
-            <X className="h-4 w-4" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[11px] w-[11px]">
+              <line x1="4" y1="4" x2="20" y2="20" />
+              <line x1="20" y1="4" x2="4" y2="20" />
+            </svg>
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-[26px] py-[22px]">
           {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-xl bg-[color:var(--color-surface-2)] px-4 py-4">
-                  <div className="h-2.5 w-20 rounded-full bg-[color:var(--color-border)]" />
-                  <div className="mt-2 h-3.5 w-36 rounded-full bg-[color:var(--color-border)]" />
-                </div>
-              ))}
-            </div>
+            <DrawerSkeleton />
           ) : profile ? (
             <>
-              <div>
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)]">Contact Details</p>
-                <div className="space-y-2">
-                  <InfoRow icon={Hash} label="Member #" value={member?.memberNumber ?? 'None'} />
-                  <InfoRow icon={Mail} label="Email" value={member?.email ?? 'None'} />
-                  <InfoRow icon={Phone} label="Phone" value={member?.phone ?? 'None'} />
-                </div>
-              </div>
+              <SectionLabel>Contact details</SectionLabel>
+              <FieldRow icon={Hash}          label="Member #" value={member?.memberNumber ?? '—'} mono />
+              <FieldRow icon={Mail}          label="Email"    value={member?.email        ?? '—'} />
+              <FieldRow icon={Phone}         label="Phone"    value={member?.phone        ?? '—'} mono />
 
-              <div>
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)]">Active Membership</p>
-                {membership ? (
-                  <div className="space-y-2">
-                    <InfoRow icon={ShieldCheck} label="Plan" value={membership.planName} />
-                    <InfoRow icon={Calendar} label="Expires On" value={membership.endDate} />
-                    <MembershipProgress endDate={membership.endDate} />
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-[color:var(--color-border)] px-4 py-6 text-center">
-                    <p className="text-xs text-[color:var(--color-text-muted)]">No active membership plan</p>
-                  </div>
-                )}
-              </div>
+              <SectionLabel>Active membership</SectionLabel>
+              {membership ? (
+                <>
+                  <FieldRow icon={ShieldCheck} label="Plan"       value={membership.planName} />
+                  <FieldRow icon={Calendar}    label="Expires on" value={membership.endDate}  mono />
+                  <TapeProgress endDate={membership.endDate} />
+                </>
+              ) : (
+                <div
+                  className="border border-dashed border-[color:var(--color-border)] px-4 py-6 text-center text-[13px]"
+                  style={{ color: 'var(--color-text-subtle)' }}
+                >
+                  No active membership
+                </div>
+              )}
             </>
           ) : null}
         </div>
@@ -115,50 +137,119 @@ export function MemberProfileDrawer({
   );
 }
 
-function InfoRow({
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="mb-[10px] mt-[22px] border-t pt-[16px] text-[10px] uppercase tracking-[0.12em] first:mt-0 first:border-0 first:pt-0"
+      style={{ ...{ fontFamily: 'var(--font-mono)' }, color: 'var(--color-text-subtle)', borderColor: 'var(--color-border)' }}
+    >
+      {children}
+    </p>
+  );
+}
+
+function FieldRow({
   icon: Icon,
   label,
   value,
+  mono,
 }: {
-  icon: typeof X;
+  icon: typeof Hash;
   label: string;
   value: string;
+  mono?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-4 py-3">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[color:var(--color-surface-3)] text-[color:var(--color-text-muted)]">
-        <Icon className="h-3.5 w-3.5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-[color:var(--color-text-subtle)]">{label}</p>
-        <p className="mt-0.5 text-xs font-semibold text-[color:var(--color-text-strong)] truncate">{value}</p>
+    <div
+      className="mb-[10px] flex items-center gap-3 border px-[14px] py-[12px]"
+      style={{ borderColor: 'var(--color-border)', background: 'transparent' }}
+    >
+      <Icon
+        className="h-[15px] w-[15px] shrink-0"
+        style={{ color: 'var(--color-text-subtle)', strokeWidth: 1.6 }}
+      />
+      <div>
+        <p
+          className="text-[9px] uppercase tracking-[0.10em]"
+          style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-subtle)' }}
+        >
+          {label}
+        </p>
+        <p
+          className="mt-[3px] text-[14px]"
+          style={mono ? { fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-text-strong)' } : { color: 'var(--color-text-strong)' }}
+        >
+          {value}
+        </p>
       </div>
     </div>
   );
 }
 
-function MembershipProgress({ endDate }: { endDate: string }) {
-  const end = new Date(endDate).getTime();
-  const now = Date.now();
-  const start = end - 30 * 24 * 60 * 60 * 1000;
-  const pct = Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100));
+function TapeProgress({ endDate }: { endDate: string }) {
+  const end      = new Date(endDate).getTime();
+  const now      = Date.now();
+  const start    = end - 30 * 24 * 60 * 60 * 1000;
+  const pct      = Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100));
   const remaining = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
-  const urgent = remaining <= 3;
+  const urgent   = remaining <= 3;
 
   return (
-    <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-4 py-3">
-      <div className="flex items-center justify-between text-xs mb-2">
-        <span className="text-[color:var(--color-text-muted)] text-[10px] font-semibold uppercase tracking-wider">Membership progress</span>
-        <span className={cn('font-semibold text-xs', urgent ? 'text-[color:var(--color-status-expired)]' : 'text-[color:var(--color-text-strong)]')}>
+    <div className="mt-4">
+      {/* Tape header */}
+      <div className="mb-2 flex items-center justify-between">
+        <span
+          className="text-[10px] uppercase tracking-[0.10em]"
+          style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-subtle)' }}
+        >
+          Membership progress
+        </span>
+        <span
+          className="text-[12px]"
+          style={{
+            fontFamily: 'var(--font-mono)',
+            color: urgent ? 'var(--color-status-expired)' : 'var(--color-status-valid)',
+          }}
+        >
           {remaining}d remaining
         </span>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-[color:var(--color-surface-3)]">
+
+      <div
+        className="relative flex h-[14px] border"
+        style={{ borderColor: 'var(--color-border)' }}
+      >
         <div
-          className={cn('h-1.5 rounded-full transition-all', urgent ? 'bg-[color:var(--color-status-expired)]' : 'bg-[color:var(--color-status-valid)]')}
-          style={{ width: `${pct}%` }}
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(90deg, var(--color-border) 0 1px, transparent 1px 8px)',
+          }}
+        />
+        <div
+          className="relative z-10 h-full transition-all"
+          style={{
+            width:      `${pct}%`,
+            background: urgent ? 'var(--color-status-expired)' : 'var(--color-plate-moss-border)',
+          }}
         />
       </div>
+    </div>
+  );
+}
+
+function DrawerSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="animate-pulse border border-[color:var(--color-border)] px-[14px] py-[12px]"
+        >
+          <div className="h-2 w-16" style={{ background: 'var(--color-border)' }} />
+          <div className="mt-2 h-3 w-36" style={{ background: 'var(--color-border)' }} />
+        </div>
+      ))}
     </div>
   );
 }

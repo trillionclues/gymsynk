@@ -1,25 +1,37 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { Big_Shoulders, Public_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import '@/styles/globals.css';
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from '@/components/ThemeProvider';
 
-const geistSans = Geist({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
+// Big Shoulders — display / headings (note: "Display" variant doesn't exist in this version)
+const bigShoulders = Big_Shoulders({
+  variable: '--font-display',
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
+// Public Sans — body / UI text
+const publicSans = Public_Sans({
+  variable: '--font-body',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+// IBM Plex Mono — data / labels / IDs
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: '--font-mono',
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "GymSynk",
-  description: "Self-hosted gym management — QR check-in, member tracking, real-time cashier tooling.",
+  title: 'GymSynk',
+  description: 'Self-hosted gym management — QR check-in, member tracking, real-time cashier tooling.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -27,21 +39,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${bigShoulders.variable} ${publicSans.variable} ${ibmPlexMono.variable} h-full`}
     >
-      <head>
-        {/* Prevents flash of wrong theme */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function(){var s=localStorage.getItem('gymsynk-theme');
-          var d=window.matchMedia('(prefers-color-scheme:dark)').matches;
-          var r=s==='dark'||((!s||s==='system')&&d)?'dark':'light';
-          document.documentElement.classList.add(r);})();
-        `}} />
-      </head>
-      <body>
-        <ThemeProvider>
-        {children}
-        </ThemeProvider>
+      <body style={{ fontFamily: 'var(--font-body), -apple-system, sans-serif' }}>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

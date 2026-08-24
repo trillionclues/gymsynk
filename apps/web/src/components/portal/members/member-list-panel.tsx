@@ -1,120 +1,152 @@
 'use client';
 
-import { LoaderCircle, RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LoaderCircle, RefreshCw, Search } from 'lucide-react';
 import type { MemberListItem } from '@/services/member-service';
 import { cn } from '@/lib/utils';
-import { MemberAvatar, StatusPill } from '../dashboard/dashboard-ui';
+import { Tag, Btn } from '../dashboard/dashboard-ui';
 
-type MemberListPanelProps = {
+const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
+const DISPLAY: React.CSSProperties = { fontFamily: 'var(--font-display)', textTransform: 'uppercase' };
+
+type Props = {
   members: MemberListItem[];
   loading: boolean;
   refreshing: boolean;
   search: string;
-  onSearchChange: (value: string) => void;
+  onSearchChange: (v: string) => void;
   onRefresh: () => void;
-  onOpenMember: (memberId: string) => void;
-  onPageChange: (page: number) => void;
+  onOpenMember: (id: string) => void;
+  onPageChange: (p: number) => void;
   page: number;
   totalPages: number;
   onOpenRegister?: () => void;
 };
 
 export function MemberListPanel({
-  members,
-  loading,
-  refreshing,
-  search,
-  onSearchChange,
-  onRefresh,
-  onOpenMember,
-  onPageChange,
-  page,
-  totalPages,
-  onOpenRegister,
-}: MemberListPanelProps) {
+  members, loading, refreshing, search, onSearchChange,
+  onRefresh, onOpenMember, onPageChange, page, totalPages, onOpenRegister,
+}: Props) {
   return (
-    <section className="rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_1px_4px_var(--color-shadow)] w-full">
-      <div className="flex flex-col gap-3 border-b border-[color:var(--color-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <section className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] w-full">
+
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3 border-b border-[color:var(--color-border)] px-[22px] py-[18px] sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-[color:var(--color-text-strong)]">Member Directory</h3>
-          <p className="mt-0.5 text-xs text-[color:var(--color-text-muted)]">
-            Search by name, phone, email, or member number.
+          <h3 className="text-[17px] font-bold" style={DISPLAY}>
+            Member Directory
+          </h3>
+          <p className="mt-[2px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+            Search by name, phone, email, or member number
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <SearchField value={search} onChange={onSearchChange} />
-          <button
-            type="button"
-            onClick={onRefresh}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs font-medium text-[color:var(--color-text-strong)] transition hover:border-[color:var(--color-border-strong)]"
+          {/* Search field */}
+          <label
+            className="flex items-center gap-2 border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-[9px]"
+            style={{ minWidth: 280 }}
           >
-            {refreshing ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            <Search className="h-[14px] w-[14px] shrink-0" style={{ color: 'var(--color-text-subtle)' }} />
+            <input
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search members…"
+              className="w-full bg-transparent text-[13px] outline-none placeholder:text-[color:var(--color-text-subtle)]"
+              style={{ color: 'var(--color-text)' }}
+            />
+          </label>
+
+          <Btn onClick={onRefresh} className="gap-1.5">
+            {refreshing
+              ? <LoaderCircle className="h-3 w-3 animate-spin" />
+              : <RefreshCw className="h-3 w-3" />}
             Refresh
-          </button>
+          </Btn>
+
           {onOpenRegister && (
-            <button
-              type="button"
-              onClick={onOpenRegister}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-black px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            >
+            <Btn primary onClick={onOpenRegister}>
               + Register Member
-            </button>
+            </Btn>
           )}
         </div>
       </div>
 
-
+      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-2)]">
-              <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-[color:var(--color-text-subtle)]">Member</th>
-              <th className="hidden px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-[color:var(--color-text-subtle)] sm:table-cell">Contact</th>
-              <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-[color:var(--color-text-subtle)]">Status</th>
-              <th className="hidden px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-[color:var(--color-text-subtle)] md:table-cell">Plan</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-[color:var(--color-text-subtle)]">Action</th>
+            <tr className="border-b border-[color:var(--color-border)]">
+              {['Member', 'Contact', 'Status', 'Plan', ''].map((h) => (
+                <th
+                  key={h}
+                  className={cn(
+                    'px-[22px] py-[14px] text-left text-[10px] uppercase tracking-[0.10em] font-normal',
+                    h === 'Contact' && 'hidden sm:table-cell',
+                    h === 'Plan'    && 'hidden md:table-cell',
+                    h === ''        && 'text-right',
+                  )}
+                  style={{ ...MONO, color: 'var(--color-text-subtle)', borderColor: 'var(--color-border)' }}
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
+
           <tbody>
             {loading && !members.length ? (
               <SkeletonRows />
             ) : members.length ? (
-              members.map((member) => (
+              members.map((m) => (
                 <tr
-                  key={member.id}
-                  onClick={() => onOpenMember(member.id)}
+                  key={m.id}
+                  onClick={() => onOpenMember(m.id)}
                   className="cursor-pointer border-b border-[color:var(--color-border)] last:border-0 transition hover:bg-[color:var(--color-surface-2)]"
+                  style={{ borderColor: 'var(--color-hairline-soft, var(--color-border))' }}
                 >
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <MemberAvatar name={`${member.firstName} ${member.lastName}`} size="sm" />
+                  {/* Member */}
+                  <td className="px-[22px] py-[16px] align-middle">
+                    <div className="flex items-center gap-[14px]">
+                      <Tag name={`${m.firstName} ${m.lastName}`} size="sm" />
                       <div>
-                        <p className="font-medium text-[color:var(--color-text-strong)]">
-                          {member.firstName} {member.lastName}
+                        <p className="text-[14px] font-semibold" style={{ color: 'var(--color-text-strong)' }}>
+                          {m.firstName} {m.lastName}
                         </p>
-                        <p className="text-xs text-[color:var(--color-text-muted)]">
-                          {member.memberNumber ?? 'No number'}
+                        <p className="mt-[2px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+                          {m.memberNumber ?? '—'}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="hidden px-5 py-3.5 sm:table-cell">
-                    <p className="text-[color:var(--color-text-muted)]">{member.email ?? '—'}</p>
-                    <p className="text-xs text-[color:var(--color-text-subtle)]">{member.phone ?? '—'}</p>
+
+                  {/* Contact */}
+                  <td className="hidden px-[22px] py-[16px] align-middle sm:table-cell">
+                    <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>{m.email ?? '—'}</p>
+                    <p className="mt-[3px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>{m.phone ?? '—'}</p>
                   </td>
-                  <td className="px-5 py-3.5">
-                    <StatusLabel active={member.isActive} />
+
+                  {/* Status chit */}
+                  <td className="px-[22px] py-[16px] align-middle">
+                    <StatusChit active={m.isActive} />
                   </td>
-                  <td className="hidden px-5 py-3.5 md:table-cell">
-                    <p className="text-[color:var(--color-text-muted)]">
-                      {member.activePlanName ?? 'No active plan'}
+
+                  {/* Plan */}
+                  <td className="hidden px-[22px] py-[16px] align-middle md:table-cell">
+                    <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>
+                      {m.activePlanName ?? 'No plan'}
                     </p>
-                    {member.activeMembershipEndsOn ? (
-                      <p className="text-xs text-[color:var(--color-text-subtle)]">Until {member.activeMembershipEndsOn}</p>
+                    {m.activeMembershipEndsOn ? (
+                      <p className="mt-[3px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+                        Until {m.activeMembershipEndsOn}
+                      </p>
                     ) : null}
                   </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <span className="inline-flex items-center gap-1 rounded-lg border border-[color:var(--color-border)] px-3 py-1 text-xs font-medium text-[color:var(--color-text-strong)] transition hover:border-[color:var(--color-border-strong)]">
+
+                  {/* Action */}
+                  <td className="px-[22px] py-[16px] align-middle text-right">
+                    <span
+                      className="inline-flex cursor-pointer items-center gap-[6px] border border-[color:var(--color-border)] px-[12px] py-[8px] text-[11px] uppercase tracking-[0.08em] transition hover:border-[color:var(--color-border-strong)]"
+                      style={MONO}
+                    >
                       View →
                     </span>
                   </td>
@@ -122,7 +154,11 @@ export function MemberListPanel({
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-5 py-12 text-center text-sm text-[color:var(--color-text-muted)]">
+                <td
+                  colSpan={5}
+                  className="px-[22px] py-[30px] text-center text-[13px]"
+                  style={{ color: 'var(--color-text-subtle)' }}
+                >
                   No members matched the search.
                 </td>
               </tr>
@@ -131,69 +167,56 @@ export function MemberListPanel({
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[color:var(--color-border)] px-5 py-3">
-        <p className="text-xs text-[color:var(--color-text-muted)]">
+      {/* Pager */}
+      <div
+        className="flex items-center justify-between border-t border-[color:var(--color-border)] px-[22px] py-[14px]"
+      >
+        <span className="text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
           Page {page + 1} of {Math.max(totalPages, 1)}
-        </p>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            disabled={page === 0}
-            onClick={() => onPageChange(page - 1)}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg border text-xs transition',
-              page === 0
-                ? 'cursor-not-allowed border-[color:var(--color-border)] text-[color:var(--color-text-subtle)]'
-                : 'border-[color:var(--color-border)] text-[color:var(--color-text-strong)] hover:bg-[color:var(--color-surface-2)]',
-            )}
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            disabled={page + 1 >= totalPages}
-            onClick={() => onPageChange(page + 1)}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg border text-xs transition',
-              page + 1 >= totalPages
-                ? 'cursor-not-allowed border-[color:var(--color-border)] text-[color:var(--color-text-subtle)]'
-                : 'border-[color:var(--color-border)] text-[color:var(--color-text-strong)] hover:bg-[color:var(--color-surface-2)]',
-            )}
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+        </span>
+        <div className="flex gap-px">
+          <PagerBtn disabled={page === 0}          onClick={() => onPageChange(page - 1)}>‹</PagerBtn>
+          <PagerBtn disabled={page + 1 >= totalPages} onClick={() => onPageChange(page + 1)}>›</PagerBtn>
         </div>
       </div>
     </section>
   );
 }
 
-function SearchField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function StatusChit({ active }: { active: boolean }) {
   return (
-    <label className="flex min-w-[220px] items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2">
-      <Search className="h-3.5 w-3.5 text-[color:var(--color-text-subtle)]" />
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Search members…"
-        className="w-full bg-transparent text-sm text-[color:var(--color-text-strong)] outline-none placeholder:text-[color:var(--color-text-subtle)]"
+    <span
+      className="inline-flex items-center gap-[6px] border px-[8px] py-[4px] text-[10px] uppercase tracking-[0.08em]"
+      style={{
+        fontFamily:  'var(--font-mono)',
+        color:       active ? 'var(--color-status-valid)'   : 'var(--color-status-expired)',
+        borderColor: active ? 'var(--color-plate-moss-border)' : 'var(--color-plate-rust-border)',
+      }}
+    >
+      <span
+        className="h-[6px] w-[6px] shrink-0"
+        style={{ background: active ? 'var(--color-status-valid)' : 'var(--color-status-expired)' }}
       />
-    </label>
+      {active ? 'Active' : 'Inactive'}
+    </span>
   );
 }
 
-function StatusLabel({ active }: { active: boolean }) {
+function PagerBtn({ disabled, onClick, children }: {
+  disabled: boolean; onClick: () => void; children: React.ReactNode;
+}) {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold',
-        active
-          ? 'bg-[color:var(--color-status-valid-bg)] text-[color:var(--color-status-valid)]'
-          : 'bg-[color:var(--color-status-expired-bg)] text-[color:var(--color-status-expired)]',
-      )}
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-[30px] w-[30px] items-center justify-center border border-[color:var(--color-border)] bg-transparent text-xs transition hover:border-[color:var(--color-border-strong)] disabled:cursor-not-allowed disabled:opacity-30"
+      style={{ color: 'var(--color-text-muted)' }}
     >
-      {active ? 'Active' : 'Inactive'}
-    </span>
+      {children}
+    </button>
   );
 }
 
@@ -202,12 +225,15 @@ function SkeletonRows() {
     <>
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className="border-b border-[color:var(--color-border)]">
-          <td className="px-5 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="h-7 w-7 animate-pulse rounded-full bg-[color:var(--color-border)]" />
-              <div className="space-y-1.5">
-                <div className="h-3 w-28 animate-pulse rounded-full bg-[color:var(--color-border)]" />
-                <div className="h-2 w-20 animate-pulse rounded-full bg-[color:var(--color-border)]" />
+          <td className="px-[22px] py-[16px]">
+            <div className="flex items-center gap-[14px]">
+              <div
+                className="h-[34px] w-[34px] animate-pulse border border-[color:var(--color-border)]"
+                style={{ background: 'var(--color-surface-2)' }}
+              />
+              <div className="space-y-2">
+                <div className="h-3 w-28 animate-pulse" style={{ background: 'var(--color-border)' }} />
+                <div className="h-2.5 w-20 animate-pulse" style={{ background: 'var(--color-border)' }} />
               </div>
             </div>
           </td>

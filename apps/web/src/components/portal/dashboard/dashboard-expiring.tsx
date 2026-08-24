@@ -1,10 +1,10 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import type { ExpiringMembershipResponse } from '@/services/dashboard-service';
-import { EmptyBlock, FeedSkeleton, MemberAvatar, Panel } from './dashboard-ui';
+import { EmptyBlock, FeedSkeleton, Tag, Panel } from './dashboard-ui';
 import { cn } from '@/lib/utils';
+
+const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
 
 export function DashboardExpiring({
   members,
@@ -16,8 +16,8 @@ export function DashboardExpiring({
   onInspectMember?: (memberId: string) => void;
 }) {
   return (
-    <Panel title="Expiring soon" subtitle="Within the next 7 days">
-      <div className="space-y-2">
+    <Panel title="Expiring Soon" subtitle="Within the next 7 days">
+      <div className="-mx-[22px] -mt-[22px] -mb-[22px]">
         {loading && !members.length ? (
           <FeedSkeleton compact />
         ) : members.length ? (
@@ -29,10 +29,12 @@ export function DashboardExpiring({
             />
           ))
         ) : (
-          <EmptyBlock
-            title="Nothing expiring soon"
-            body="This area fills when memberships approach their end date."
-          />
+          <div className="px-[22px] py-[22px]">
+            <EmptyBlock
+              title="Nothing expiring"
+              body="This fills when memberships approach their end date."
+            />
+          </div>
         )}
       </div>
     </Panel>
@@ -46,53 +48,51 @@ function ExpiryRow({
   member: ExpiringMembershipResponse;
   onInspect?: () => void;
 }) {
-  const urgent = member.daysRemaining <= 2;
+  const urgent  = member.daysRemaining <= 2;
   const warning = member.daysRemaining <= 5;
+
+  const chipColor = urgent
+    ? 'var(--color-status-expired)'
+    : warning
+    ? 'var(--color-status-override)'
+    : 'var(--color-plan-weekly)';
+
+  const chipBorder = urgent
+    ? 'var(--color-plate-rust-border)'
+    : warning
+    ? 'var(--color-plate-gold-border)'
+    : 'var(--color-border)';
 
   return (
     <div
       onClick={onInspect}
-      className={`flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-4 py-3 transition hover:bg-[color:var(--color-surface-3)] ${
-        onInspect ? 'cursor-pointer' : ''
-      }`}
+      className="flex items-center justify-between gap-[14px] border-b border-[color:var(--color-border)] px-[22px] py-[14px] last:border-0 hover:bg-[color:var(--color-surface-2)] transition-colors"
+      style={{ cursor: onInspect ? 'pointer' : 'default' }}
     >
-      <MemberAvatar name={member.memberName} size="sm" />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-[color:var(--color-text-strong)] truncate">{member.memberName}</p>
-        <p className="mt-0.5 text-xs text-[color:var(--color-text-muted)]">{member.planName}</p>
+      <div className="flex min-w-0 items-center gap-[14px]">
+        <Tag name={member.memberName} size="sm" />
+        <div className="min-w-0">
+          <p className="text-[14px] font-semibold truncate" style={{ color: 'var(--color-text-strong)' }}>
+            {member.memberName}
+          </p>
+          <p className="mt-[2px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+            {member.planName}
+          </p>
+        </div>
       </div>
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
+
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        {/* Days-remaining chit */}
         <span
-          className={cn(
-            'rounded-full px-2.5 py-0.5 text-[10px] font-bold',
-            urgent
-              ? 'bg-[color:var(--color-status-expired-bg)] text-[color:var(--color-status-expired)]'
-              : warning
-              ? 'bg-[color:var(--color-status-override-bg)] text-[color:var(--color-status-override)]'
-              : 'bg-[color:var(--color-plan-weekly-bg)] text-[color:var(--color-plan-weekly)]',
-          )}
+          className="inline-flex items-center gap-[6px] border px-[8px] py-[4px] text-[10px] uppercase tracking-[0.08em]"
+          style={{ ...MONO, color: chipColor, borderColor: chipBorder }}
         >
+          <span className="h-[6px] w-[6px] shrink-0" style={{ background: chipColor }} />
           {member.daysRemaining}d left
         </span>
-        {onInspect ? (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onInspect();
-            }}
-            className="flex items-center gap-0.5 text-[10px] font-semibold text-[color:var(--color-accent)] hover:underline"
-          >
-            Inspect <ArrowRight className="h-3 w-3" />
-          </button>
-        ) : (
-          <Link
-            href="/dashboard/members"
-            className="flex items-center gap-0.5 text-[10px] text-[color:var(--color-accent)] hover:underline"
-          >
-            View <ArrowRight className="h-3 w-3" />
-          </Link>
-        )}
+        <span className="text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+          {member.endDate}
+        </span>
       </div>
     </div>
   );
