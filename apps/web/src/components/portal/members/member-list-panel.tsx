@@ -4,9 +4,7 @@ import { LoaderCircle, RefreshCw, Search } from 'lucide-react';
 import type { MemberListItem } from '@/services/member-service';
 import { cn } from '@/lib/utils';
 import { Tag, Btn } from '../dashboard/dashboard-ui';
-
-const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
-const DISPLAY: React.CSSProperties = { fontFamily: 'var(--font-display)', textTransform: 'uppercase' };
+import { DISPLAY, MONO } from '@/lib/constants';
 
 type Props = {
   members: MemberListItem[];
@@ -29,7 +27,6 @@ export function MemberListPanel({
   return (
     <section className="border border-[color:var(--color-border)] bg-[color:var(--color-surface)] w-full">
 
-      {/* Toolbar */}
       <div className="flex flex-col gap-3 border-b border-[color:var(--color-border)] px-[22px] py-[18px] sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[17px] font-bold" style={DISPLAY}>
@@ -40,7 +37,6 @@ export function MemberListPanel({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Search field */}
           <label
             className="flex items-center gap-2 border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-[9px]"
             style={{ minWidth: 280 }}
@@ -70,7 +66,6 @@ export function MemberListPanel({
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
@@ -124,12 +119,10 @@ export function MemberListPanel({
                     <p className="mt-[3px] text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>{m.phone ?? '—'}</p>
                   </td>
 
-                  {/* Status chit */}
                   <td className="px-[22px] py-[16px] align-middle">
                     <StatusChit active={m.isActive} />
                   </td>
 
-                  {/* Plan */}
                   <td className="hidden px-[22px] py-[16px] align-middle md:table-cell">
                     <p className="text-[13px]" style={{ color: 'var(--color-text)' }}>
                       {m.activePlanName ?? 'No plan'}
@@ -141,7 +134,6 @@ export function MemberListPanel({
                     ) : null}
                   </td>
 
-                  {/* Action */}
                   <td className="px-[22px] py-[16px] align-middle text-right">
                     <span
                       className="inline-flex cursor-pointer items-center gap-[6px] border border-[color:var(--color-border)] px-[12px] py-[8px] text-[11px] uppercase tracking-[0.08em] transition hover:border-[color:var(--color-border-strong)]"
@@ -167,7 +159,6 @@ export function MemberListPanel({
         </table>
       </div>
 
-      {/* Pager */}
       <div
         className="flex items-center justify-between border-t border-[color:var(--color-border)] px-[22px] py-[14px]"
       >
@@ -183,7 +174,6 @@ export function MemberListPanel({
   );
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function StatusChit({ active }: { active: boolean }) {
   return (

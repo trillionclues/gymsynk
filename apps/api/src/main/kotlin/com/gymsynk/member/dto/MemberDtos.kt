@@ -27,6 +27,7 @@ data class ActiveMembershipView(
     val status: String,
     val price: BigDecimal,
     val currency: String,
+    val daysRemaining: Long,
 )
 
 data class MemberProfileResponse(

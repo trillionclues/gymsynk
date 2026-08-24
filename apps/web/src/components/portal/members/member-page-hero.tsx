@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { UserPlus, ScanQrCode } from 'lucide-react';
+import { Btn } from '../dashboard/dashboard-ui';
 
 export function MemberPageHero({ onOpenRegister }: { onOpenRegister?: () => void }) {
   return (
@@ -16,22 +17,25 @@ export function MemberPageHero({ onOpenRegister }: { onOpenRegister?: () => void
       </div>
 
       <div className="flex items-center gap-2.5 shrink-0">
+        <Btn>
+
         <Link
           href="/dashboard/scanner"
-          className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3.5 py-2 text-xs font-medium text-[color:var(--color-text)] shadow-xs transition hover:bg-[color:var(--color-surface-2)]"
+          className="inline-flex items-center gap-2 "
         >
           <ScanQrCode className="h-3.5 w-3.5 text-[color:var(--color-text-muted)]" />
           Scanner Station
         </Link>
+                </Btn>
         {onOpenRegister && (
-          <button
+          <Btn
             type="button"
             onClick={onOpenRegister}
-            className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            // className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             <UserPlus className="h-3.5 w-3.5" />
             Register Member
-          </button>
+          </Btn>
         )}
       </div>
     </div>

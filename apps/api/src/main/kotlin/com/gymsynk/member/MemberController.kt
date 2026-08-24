@@ -17,11 +17,12 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/members")
-@PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
 class MemberController(
     private val memberService: MemberService,
 ) {
+    //  Staff endpoints
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     fun searchMembers(
         auth: Authentication,
         @RequestParam(required = false) search: String?,
@@ -32,6 +33,7 @@ class MemberController(
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     fun getMember(
         @PathVariable id: UUID,
         auth: Authentication,
@@ -41,10 +43,20 @@ class MemberController(
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     fun registerMember(
         auth: Authentication,
         @RequestBody @Valid request: CreateMemberRequest,
     ): ResponseEntity<MemberRegistrationResponse> {
         return ResponseEntity.ok(memberService.registerMember(auth.requireAuthContext(), request))
+    }
+
+    // Member self-service endpoint
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('MEMBER')")
+    fun getMyProfile(auth: Authentication): ResponseEntity<MemberProfileResponse> {
+        val ctx = auth.requireAuthContext()
+        // Members look up their own profile — userId IS the memberId
+        return ResponseEntity.ok(memberService.getMember(ctx.orgId, ctx.userId))
     }
 }

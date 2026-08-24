@@ -1,10 +1,13 @@
 package com.gymsynk.checkin
 
+import com.gymsynk.checkin.dto.CheckInHistoryItem
+import com.gymsynk.checkin.dto.CheckInHistoryResponse
 import com.gymsynk.checkin.dto.TodayCheckInResponse
 import com.gymsynk.checkin.entity.CheckIn
 import com.gymsynk.checkin.repository.CheckInRepository
 import com.gymsynk.common.exception.BusinessException
 import com.gymsynk.common.exception.ErrorCodes
+import com.gymsynk.location.repository.LocationRepository
 import com.gymsynk.member.repository.UserRepository
 import com.gymsynk.membership.repository.MembershipRepository
 import com.gymsynk.organization.repository.OrganizationRepository
@@ -20,6 +23,7 @@ class CheckInQueryService(
     private val checkInRepository: CheckInRepository,
     private val userRepository: UserRepository,
     private val membershipRepository: MembershipRepository,
+    private val locationRepository: LocationRepository,
 ) {
     @Transactional(readOnly = true)
     fun today(orgId: UUID): List<TodayCheckInResponse> {
@@ -53,5 +57,39 @@ class CheckInQueryService(
                 overrideReason = checkIn.overrideReason,
             )
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun history(userId: UUID, page: Int, size: Int): CheckInHistoryResponse {
+        val pageable = org.springframework.data.domain.PageRequest.of(page, size)
+        val checkInsPage = checkInRepository.findByUserIdOrderByCheckInTimeDesc(userId, pageable)
+
+        val membershipsById = membershipRepository.findAllById(
+            checkInsPage.content.mapNotNull { it.membershipId }.distinct()
+        ).associateBy { it.id }
+
+        val locationsById = locationRepository.findAllById(
+            checkInsPage.content.map { it.locationId }.distinct()
+        ).associateBy { it.id }
+
+        val items = checkInsPage.content.map { checkIn ->
+            val membership = checkIn.membershipId?.let { membershipsById[it] }
+            val location   = locationsById[checkIn.locationId]
+            CheckInHistoryItem(
+                checkInId    = checkIn.id,
+                checkInTime  = checkIn.checkInTime,
+                locationName = location?.name ?: "Unknown location",
+                planName     = membership?.plan?.name ?: "Unknown",
+                session      = checkIn.sessionType,
+                status       = checkIn.status,
+                method       = checkIn.checkInMethod,
+            )
+        }
+
+        return CheckInHistoryResponse(
+            items         = items,
+            totalPages    = checkInsPage.totalPages,
+            totalElements = checkInsPage.totalElements,
+        )
     }
 }

@@ -25,3 +25,9 @@ logging:
   level:
     com.gymsynk: DEBUG
     org.springframework.security: DEBUG
+  mail:
+    from: GymSynk <noreply@mockline.xyz>
+    # from: GymSynk <onboarding@resend.dev> # Resend allows it on the free tier.
+    # Set before starting: export RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+    # The from address must match a verified sender domain in your Resend account.
+    # For testing without a verified domain use: onboarding@resend.dev

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ScanQrCode, UserPlus } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { Btn } from './dashboard-ui';
 
 export function DashboardHero({ onOpenRegister }: { onOpenRegister?: () => void }) {
   const user = useAuthStore((s) => s.user);
@@ -22,30 +23,37 @@ export function DashboardHero({ onOpenRegister }: { onOpenRegister?: () => void 
 
       <div className="flex items-center gap-2.5 shrink-0">
         {onOpenRegister ? (
-          <button
+          <Btn
             type="button"
             onClick={onOpenRegister}
-            className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3.5 py-2 text-xs font-medium text-[color:var(--color-text)] shadow-xs transition hover:bg-[color:var(--color-surface-2)] cursor-pointer"
+             className="inline-flex items-center gap-2 "
+            // className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3.5 py-2 text-xs font-medium text-[color:var(--color-text)] shadow-xs transition hover:bg-[color:var(--color-surface-2)] cursor-pointer"
           >
             <UserPlus className="h-3.5 w-3.5 text-[color:var(--color-text-muted)]" />
             Add Member
-          </button>
+          </Btn>
         ) : (
+          <Btn>
           <Link
             href="/dashboard/members"
-            className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3.5 py-2 text-xs font-medium text-[color:var(--color-text)] shadow-xs transition hover:bg-[color:var(--color-surface-2)]"
+             className="inline-flex items-center gap-2 "
+            // className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3.5 py-2 text-xs font-medium text-[color:var(--color-text)] -2)]"
           >
             <UserPlus className="h-3.5 w-3.5 text-[color:var(--color-text-muted)]" />
             Add Member
           </Link>
+          </Btn>
         )}
+        <Btn>
         <Link
           href="/dashboard/scanner"
-          className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+           className="inline-flex items-center gap-2 "
+          // className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           <ScanQrCode className="h-3.5 w-3.5" />
           Scanner Station
         </Link>
+        </Btn>
       </div>
     </div>
   );

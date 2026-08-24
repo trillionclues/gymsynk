@@ -1,15 +1,13 @@
 import type { ComponentType, ReactNode } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { DISPLAY, MONO } from '@/lib/constants';
 
 const PANEL =
   'border border-[color:var(--color-border)] bg-[color:var(--color-surface)]';
 
 const PANEL_HEAD =
   'flex items-start justify-between gap-4 border-b border-[color:var(--color-border)] px-[22px] py-[18px]';
-
-const MONO: React.CSSProperties = { fontFamily: 'var(--font-mono)' };
-const DISPLAY: React.CSSProperties = { fontFamily: 'var(--font-display)', textTransform: 'uppercase' };
 
 export function ActionLink({
   href,
