@@ -39,7 +39,7 @@ export type DashboardSnapshot = {
 export async function loadDashboardSnapshot(range: 'today' | '7d' | '30d' = 'today') {
   const [stats, todayCheckIns, expiringMemberships] = await Promise.all([
     api.get<DashboardStatsResponse>('/dashboard/stats', { params: { range } }),
-    api.get<TodayCheckInResponse[]>('/checkins/today'),
+    api.get<TodayCheckInResponse[]>('/checkins/today', { params: { range } }),
     api.get<ExpiringMembershipResponse[]>('/memberships/expiring', { params: { days: 7 } }),
   ]);
 

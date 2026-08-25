@@ -68,7 +68,7 @@ export function DashboardPage() {
     });
   }, [liveEvents, snapshot?.todayCheckIns]);
 
-  // Bump the snapshot stat counter as live events arrive
+  // snapshot stat counter as live events arrive
   const todayCount =
     (snapshot?.stats.todayCheckIns ?? 0) +
     liveEvents.filter(
@@ -91,7 +91,6 @@ export function DashboardPage() {
         </div>
       ) : null}
 
-      {/* Date period selector bar */}
       <div className="flex items-center justify-between gap-4 border-b border-[color:var(--color-border)] pb-4">
         <span className="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)]" style={MONO}>
           Overview Range
@@ -116,7 +115,6 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Stat cards */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           icon={UserRoundCheck}
@@ -139,10 +137,8 @@ export function DashboardPage() {
         />
       </section>
 
-      {/* Chart row */}
-      <CheckInChart checkIns={mergedCheckIns} loading={loading} />
+      <CheckInChart checkIns={mergedCheckIns} loading={loading} timeRange={timeRange} />
 
-      {/* Feed + expiring */}
       <section className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
         <DashboardFeed
           checkIns={mergedCheckIns}
@@ -159,14 +155,12 @@ export function DashboardPage() {
         />
       </section>
 
-      {/* Progressive Registration Modal */}
       <MemberRegistrationWizard
         isOpen={isRegisterOpen}
         onClose={() => setIsRegisterOpen(false)}
         onSuccess={() => void refresh(true)}
       />
 
-      {/* Member Profile Drawer (opens directly from dashboard check-ins or expiring lists) */}
       <MemberProfileDrawer
         profile={selectedProfile}
         loading={selectedLoading}
