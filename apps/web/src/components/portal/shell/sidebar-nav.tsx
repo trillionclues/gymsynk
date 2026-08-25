@@ -83,10 +83,33 @@ function IconMenu() {
   );
 }
 
+function IconPlans() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[18px] w-[18px]">
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  );
+}
+
+function IconStaff() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[18px] w-[18px]">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
 const primaryNav = [
   { href: '/dashboard',         label: 'Dashboard', Icon: IconDashboard },
   { href: '/dashboard/scanner', label: 'Scanner',   Icon: IconScanner   },
   { href: '/dashboard/members', label: 'Members',   Icon: IconMembers   },
+  { href: '/dashboard/plans',   label: 'Plans',     Icon: IconPlans     },
+  { href: '/dashboard/staff',   label: 'Staff',     Icon: IconStaff     },
 ];
 
 function RailBtn({
