@@ -1,6 +1,6 @@
 'use client';
 
-import { LoaderCircle, RefreshCw } from 'lucide-react';
+import { LoaderCircle, RefreshCw, ArrowRight } from 'lucide-react';
 import type { TodayCheckInResponse } from '@/services/dashboard-service';
 import { Chit, EmptyBlock, FeedSkeleton, Tag, Panel } from './dashboard-ui';
 import { MONO } from '@/lib/constants';
@@ -20,6 +20,10 @@ export function DashboardFeed({
   onInspectMember?: (memberNumber: string) => void;
   live?: boolean;
 }) {
+  const MAX_VISIBLE = 10;
+  const visible = checkIns.slice(0, MAX_VISIBLE);
+  const overflow = checkIns.length - MAX_VISIBLE;
+
   return (
     <Panel
       title="Live Check-in Feed"
@@ -52,17 +56,19 @@ export function DashboardFeed({
         </div>
       }
     >
-      <div className="-mx-[22px] -mt-[22px] -mb-[22px]">
+      <div className="-mx-[22px] -mt-[22px]">
         {loading && !checkIns.length ? (
           <FeedSkeleton />
         ) : checkIns.length ? (
-          checkIns.map((entry) => (
-            <FeedRow
-              key={entry.checkInId}
-              entry={entry}
-              onInspect={onInspectMember ? () => onInspectMember(entry.memberNumber) : undefined}
-            />
-          ))
+          <div className="max-h-[480px] overflow-y-auto">
+            {visible.map((entry) => (
+              <FeedRow
+                key={entry.checkInId}
+                entry={entry}
+                onInspect={onInspectMember ? () => onInspectMember(entry.memberNumber) : undefined}
+              />
+            ))}
+          </div>
         ) : (
           <div className="px-[22px] py-[22px]">
             <EmptyBlock
@@ -72,6 +78,20 @@ export function DashboardFeed({
           </div>
         )}
       </div>
+      {overflow > 0 && (
+        <div className="mt-3 flex items-center justify-between border-t border-[color:var(--color-border)] pt-3">
+          <span className="text-[11px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+            +{overflow} more check-ins not shown
+          </span>
+          <a
+            href="/check-ins"
+            className="inline-flex items-center gap-1 text-[11px] transition hover:opacity-70"
+            style={{ ...MONO, color: 'var(--color-text)' }}
+          >
+            View all <ArrowRight className="h-3 w-3" />
+          </a>
+        </div>
+      )}
     </Panel>
   );
 }
