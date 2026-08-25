@@ -62,7 +62,7 @@ export function Panel({
 }
 
 export function StatCard({
-  icon: _Icon,
+  icon: Icon,
   label,
   value,
   accent,
@@ -74,64 +74,72 @@ export function StatCard({
   accent: 'valid' | 'monthly' | 'weekly' | 'override';
   trend?: string;
 }) {
-  const plateStyle: Record<string, React.CSSProperties> = {
-    valid:    { borderColor: 'var(--color-plate-moss-border)', color: 'var(--color-plate-moss-text)' },
-    monthly:  { borderColor: 'var(--color-plate-moss-border)', color: 'var(--color-plate-moss-text)' },
-    weekly:   { borderColor: 'var(--color-plate-gold-border)', color: 'var(--color-plate-gold-text)' },
-    override: { borderColor: 'var(--color-plate-rust-border)', color: 'var(--color-plate-rust-text)' },
+  const badgeStyles: Record<string, { bg: string; border: string; text: string }> = {
+    valid: {
+      bg: 'var(--color-surface-2)',
+      border: 'var(--color-plate-moss-border)',
+      text: 'var(--color-status-valid)',
+    },
+    monthly: {
+      bg: 'var(--color-surface-2)',
+      border: 'var(--color-plate-moss-border)',
+      text: 'var(--color-status-valid)',
+    },
+    weekly: {
+      bg: 'var(--color-surface-2)',
+      border: 'var(--color-plate-gold-border)',
+      text: 'var(--color-status-override)',
+    },
+    override: {
+      bg: 'var(--color-surface-2)',
+      border: 'var(--color-plate-rust-border)',
+      text: 'var(--color-status-expired)',
+    },
   };
 
-  const kpiAccent: Record<string, string> = {
-    valid:    'rust',
-    monthly:  'moss',
-    weekly:   'gold',
-    override: 'rust',
-  };
-
-  const dotBg: Record<string, React.CSSProperties> = {
-    rust:  { background: 'var(--color-status-expired)' },
-    moss:  { background: 'var(--color-status-valid)' },
-    gold:  { background: 'var(--color-status-override)' },
-  };
-
-  const tone = kpiAccent[accent] ?? 'rust';
+  const style = badgeStyles[accent] ?? badgeStyles.valid;
 
   return (
     <div
-      className="flex items-center gap-5 border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-[26px]"
+      className="flex items-center justify-between gap-4 border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-5 shadow-xs transition hover:border-[color:var(--color-border-strong)]"
     >
-      {/* Plate ring */}
-      <div
-        className="relative flex h-[74px] w-[74px] shrink-0 items-center justify-center rounded-full border"
-        style={plateStyle[accent]}
-      >
-        {/* Inner dashed ring */}
-        <div
-          className="pointer-events-none absolute inset-[8px] rounded-full border border-dashed"
-          style={{ borderColor: 'var(--color-border)' }}
-        />
-        <span
-          className="relative z-10 text-[26px] font-extrabold leading-none"
-          style={{ ...DISPLAY, fontSize: '26px' }}
+      <div className="min-w-0 space-y-1">
+        <p
+          className="text-[10px] font-semibold uppercase tracking-[0.12em] truncate"
+          style={{ ...MONO, color: 'var(--color-text-subtle)' }}
         >
-          {value}
-        </span>
-      </div>
-
-      {/* Label + trend */}
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.10em]" style={{ ...MONO, color: 'var(--color-text-muted)' }}>
           {label}
         </p>
+        <p
+          className="text-2xl font-extrabold tracking-tight whitespace-nowrap overflow-hidden text-ellipsis"
+          style={{ ...DISPLAY, color: 'var(--color-text-strong)' }}
+          title={value}
+        >
+          {value}
+        </p>
         {trend ? (
-          <p className="mt-[6px] flex items-center gap-1.5 text-[13px]" style={{ ...MONO, color: 'var(--color-text-subtle)' }}>
+          <p
+            className="flex items-center gap-1.5 text-[11px]"
+            style={{ ...MONO, color: 'var(--color-text-muted)' }}
+          >
             <span
-              className="inline-block h-1.5 w-1.5 rounded-full"
-              style={dotBg[tone]}
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: style.text }}
             />
             {trend}
           </p>
         ) : null}
+      </div>
+
+      <div
+        className="flex h-12 w-12 shrink-0 items-center justify-center border transition"
+        style={{
+          background: style.bg,
+          borderColor: style.border,
+          color: style.text,
+        }}
+      >
+        <Icon className="h-5 w-5" />
       </div>
     </div>
   );

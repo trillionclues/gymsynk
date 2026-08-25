@@ -55,7 +55,8 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const isAuthUrl =
       originalRequest?.url?.includes('/auth/login') ||
-      originalRequest?.url?.includes('/auth/refresh');
+      originalRequest?.url?.includes('/auth/refresh') ||
+      originalRequest?.url?.includes('/auth/otp');
 
     if ((status === 401 || status === 403) && originalRequest && !originalRequest._retry && !isAuthUrl) {
       if (isRefreshing) {

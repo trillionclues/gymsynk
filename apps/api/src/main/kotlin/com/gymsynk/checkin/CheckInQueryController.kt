@@ -9,15 +9,18 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/checkins")
+@RequestMapping(value = ["/checkin", "/checkins"])
 class CheckInQueryController(
     private val checkInQueryService: CheckInQueryService,
 ) {
-    //Staff endpoint for today's check-ins
+    //Staff endpoint for today's / range check-ins
     @GetMapping("/today")
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
-    fun today(auth: Authentication): ResponseEntity<List<TodayCheckInResponse>> =
-        ResponseEntity.ok(checkInQueryService.today(auth.requireAuthContext().orgId))
+    fun today(
+        @RequestParam(defaultValue = "today") range: String,
+        auth: Authentication,
+    ): ResponseEntity<List<TodayCheckInResponse>> =
+        ResponseEntity.ok(checkInQueryService.today(auth.requireAuthContext().orgId, range))
 
     // Member own check-in history
     @GetMapping("/history")

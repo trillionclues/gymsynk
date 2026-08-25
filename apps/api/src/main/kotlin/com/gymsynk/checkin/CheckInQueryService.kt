@@ -26,14 +26,27 @@ class CheckInQueryService(
     private val locationRepository: LocationRepository,
 ) {
     @Transactional(readOnly = true)
-    fun today(orgId: UUID): List<TodayCheckInResponse> {
+    fun today(orgId: UUID, range: String = "today"): List<TodayCheckInResponse> {
         val organization = organizationRepository.findById(orgId).orElseThrow {
             BusinessException(ErrorCodes.UNAUTHORIZED, "Organization not found", 404)
         }
         val zone = ZoneId.of(organization.timezone)
         val today = LocalDate.now(zone)
-        val start = today.atStartOfDay(zone).toInstant()
-        val end = today.plusDays(1).atStartOfDay(zone).toInstant()
+
+        val (start, end) = when (range.lowercase()) {
+            "7d" -> Pair(
+                today.minusDays(6).atStartOfDay(zone).toInstant(),
+                today.plusDays(1).atStartOfDay(zone).toInstant(),
+            )
+            "30d" -> Pair(
+                today.minusDays(29).atStartOfDay(zone).toInstant(),
+                today.plusDays(1).atStartOfDay(zone).toInstant(),
+            )
+            else -> Pair(
+                today.atStartOfDay(zone).toInstant(),
+                today.plusDays(1).atStartOfDay(zone).toInstant(),
+            )
+        }
 
         val checkIns = checkInRepository.findByOrgIdAndCheckInTimeBetweenOrderByCheckInTimeDesc(orgId, start, end)
         val usersById = userRepository.findAllById(checkIns.map { it.userId }.distinct()).associateBy { it.id }

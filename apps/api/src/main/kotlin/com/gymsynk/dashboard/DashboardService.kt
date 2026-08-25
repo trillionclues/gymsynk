@@ -21,14 +21,27 @@ class DashboardService(
     private val paymentRepository: PaymentRepository,
 ) {
     @Transactional(readOnly = true)
-    fun stats(orgId: UUID): DashboardStatsResponse {
+    fun stats(orgId: UUID, range: String = "today"): DashboardStatsResponse {
         val organization = organizationRepository.findById(orgId).orElseThrow {
             BusinessException(ErrorCodes.UNAUTHORIZED, "Organization not found", 404)
         }
         val zone = ZoneId.of(organization.timezone)
         val today = LocalDate.now(zone)
-        val start = today.atStartOfDay(zone).toInstant()
-        val end = today.plusDays(1).atStartOfDay(zone).toInstant()
+
+        val (start, end) = when (range.lowercase()) {
+            "7d" -> Pair(
+                today.minusDays(6).atStartOfDay(zone).toInstant(),
+                today.plusDays(1).atStartOfDay(zone).toInstant(),
+            )
+            "30d" -> Pair(
+                today.minusDays(29).atStartOfDay(zone).toInstant(),
+                today.plusDays(1).atStartOfDay(zone).toInstant(),
+            )
+            else -> Pair(
+                today.atStartOfDay(zone).toInstant(),
+                today.plusDays(1).atStartOfDay(zone).toInstant(),
+            )
+        }
 
         return DashboardStatsResponse(
             todayCheckIns = checkInRepository.countByOrgIdAndCheckInTimeBetween(orgId, start, end),
