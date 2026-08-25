@@ -2,10 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { loadStaffList, createStaffMember, toggleStaffActive, type StaffItem, type CreateStaffPayload } from '@/services/staff-service';
+import { useAuthStore } from '@/stores/authStore';
 import { MONO } from '@/lib/constants';
 import { UserCheck, Plus, X, Power, AlertCircle, UserPlus, Mail, Phone, Lock } from 'lucide-react';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { SheetSelect } from '@/components/ui/sheet-select';
 
 export function StaffPage() {
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'ADMIN';
+
   const [staff, setStaff] = useState<StaffItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,15 +109,17 @@ export function StaffPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openInviteModal}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
-          style={MONO}
-        >
-          <UserPlus className="h-4 w-4" />
-          <span>Add Staff Member</span>
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={openInviteModal}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
+            style={MONO}
+          >
+            <UserPlus className="h-4 w-4" />
+            <span>Add Staff Member</span>
+          </button>
+        )}
       </div>
 
       {error && (
@@ -185,16 +193,22 @@ export function StaffPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleActive(s.id)}
-                        className={`inline-flex items-center gap-1 text-xs font-semibold transition ${
-                          s.isActive ? 'text-red-400 hover:text-red-600' : 'text-emerald-500 hover:text-emerald-600'
-                        }`}
-                        style={MONO}
-                      >
-                        <Power className="h-3.5 w-3.5" /> {s.isActive ? 'Deactivate' : 'Activate'}
-                      </button>
+                      {isAdmin ? (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleActive(s.id)}
+                          className={`inline-flex items-center gap-1 text-xs font-semibold transition ${
+                            s.isActive ? 'text-red-400 hover:text-red-600' : 'text-emerald-500 hover:text-emerald-600'
+                          }`}
+                          style={MONO}
+                        >
+                          <Power className="h-3.5 w-3.5" /> {s.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                      ) : (
+                        <span className="text-[10px] font-bold text-[color:var(--color-text-subtle)] uppercase tracking-wider" style={MONO}>
+                          Read Only
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -204,133 +218,122 @@ export function StaffPage() {
         )}
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[color:var(--color-border)] pb-3">
-              <h3 className="text-base font-extrabold text-[color:var(--color-text-strong)]">
-                Add Staff Member
-              </h3>
-              <button type="button" onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-[color:var(--color-text-subtle)] hover:bg-[color:var(--color-surface-2)]">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {modalError && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-500">
-                {modalError}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Alex"
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Morgan"
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="cashier@yourgym.com"
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+234..."
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    System Role
-                  </label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as any)}
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none font-bold"
-                  >
-                    <option value="CASHIER">Cashier Desk</option>
-                    <option value="ADMIN">Administrator</option>
-                    <option value="FLOOR_STAFF">Floor Staff</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                  Initial Password *
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[color:var(--color-border)]">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl border border-[color:var(--color-border)] px-4 py-2 text-xs font-semibold"
-                  style={MONO}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2 text-xs font-extrabold uppercase tracking-wider"
-                  style={MONO}
-                >
-                  {submitting ? 'Creating...' : 'Add Staff Member'}
-                </button>
-              </div>
-            </form>
+      <BottomSheet
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add Staff Member"
+        titleIcon={<UserPlus className="h-5 w-5 text-emerald-500" />}
+        maxWidth="md"
+      >
+        {modalError && (
+          <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-500">
+            {modalError}
           </div>
-        </div>
-      )}
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+                First Name *
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Alex"
+                className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs outline-none focus:border-[color:var(--color-border-strong)] transition"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+                Last Name *
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Morgan"
+                className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs outline-none focus:border-[color:var(--color-border-strong)] transition"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+              Email Address *
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="cashier@yourgym.com"
+              className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs outline-none focus:border-[color:var(--color-border-strong)] transition"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+                Phone Number
+              </label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+234..."
+                className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs outline-none focus:border-[color:var(--color-border-strong)] transition"
+              />
+            </div>
+            <SheetSelect
+              label="System Role"
+              value={role}
+              onChange={(v) => setRole(v as typeof role)}
+              options={[
+                { value: 'CASHIER',    label: 'Cashier',       description: 'Desk & payment processing', icon: '💳' },
+                { value: 'ADMIN',      label: 'Administrator', description: 'Full system access',        icon: '🛡️' },
+                { value: 'FLOOR_STAFF', label: 'Floor Staff',  description: 'Check-in & floor access',   icon: '🏋️' },
+              ]}
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+              Initial Password *
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs outline-none focus:border-[color:var(--color-border-strong)] transition"
+              required
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[color:var(--color-border)]">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="rounded-xl border border-[color:var(--color-border)] px-4 py-2.5 text-xs font-semibold hover:bg-[color:var(--color-surface-2)] transition"
+              style={MONO}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+              style={MONO}
+            >
+              {submitting ? 'Creating…' : 'Add Staff Member'}
+            </button>
+          </div>
+        </form>
+      </BottomSheet>
     </div>
   );
 }

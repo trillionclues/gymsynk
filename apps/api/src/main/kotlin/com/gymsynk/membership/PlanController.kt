@@ -22,7 +22,7 @@ class PlanController(
         ResponseEntity.ok(planQueryService.activePlans(auth.requireAuthContext().orgId))
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     fun listAllPlans(auth: Authentication): ResponseEntity<List<PlanResponse>> =
         ResponseEntity.ok(planQueryService.allPlans(auth.requireAuthContext().orgId))
 

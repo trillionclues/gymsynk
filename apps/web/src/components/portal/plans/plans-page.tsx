@@ -2,15 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { loadAllPlans, createPlan, updatePlan, togglePlanActive, type PlanItem, type CreatePlanPayload } from '@/services/plan-service';
+import { fetchWorldCurrencies, type CurrencyItem } from '@/services/setup-service';
+import { useAuthStore } from '@/stores/authStore';
 import { MONO } from '@/lib/constants';
-import { Layers, Plus, Check, X, LoaderCircle, Edit3, Power, AlertCircle } from 'lucide-react';
+import { Layers, Plus, Edit3, Power, AlertCircle, Globe } from 'lucide-react';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { SheetSelect } from '@/components/ui/sheet-select';
+import { CurrencySheetModal } from '@/components/setup/modals/currency-sheet-modal';
 
 export function PlansPage() {
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'ADMIN';
+
   const [plans, setPlans] = useState<PlanItem[]>([]);
+  const [currencies, setCurrencies] = useState<CurrencyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
@@ -26,10 +36,14 @@ export function PlansPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await loadAllPlans();
+      const [data, currList] = await Promise.all([
+        loadAllPlans(),
+        fetchWorldCurrencies(),
+      ]);
       setPlans(data);
+      setCurrencies(currList);
     } catch {
-      setError('Failed to load membership plans. Make sure you are signed in as an Admin.');
+      setError('Failed to load membership plans.');
     } finally {
       setLoading(false);
     }
@@ -123,15 +137,17 @@ export function PlansPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openCreateModal}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
-          style={MONO}
-        >
-          <Plus className="h-4 w-4" />
-          <span>Create New Plan</span>
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
+            style={MONO}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Create New Plan</span>
+          </button>
+        )}
       </div>
 
       {error && (
@@ -201,163 +217,168 @@ export function PlansPage() {
                 </div>
               </div>
 
-              <div className="mt-6 flex items-center justify-between border-t border-[color:var(--color-border)] pt-4">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(p)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[color:var(--color-text-subtle)] hover:text-[color:var(--color-text-strong)] transition"
-                  style={MONO}
-                >
-                  <Edit3 className="h-3.5 w-3.5" /> Edit
-                </button>
+              {isAdmin ? (
+                <div className="mt-6 flex items-center justify-between border-t border-[color:var(--color-border)] pt-4">
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(p)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[color:var(--color-text-subtle)] hover:text-[color:var(--color-text-strong)] transition"
+                    style={MONO}
+                  >
+                    <Edit3 className="h-3.5 w-3.5" /> Edit
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleToggleActive(p.id)}
-                  className={`inline-flex items-center gap-1 text-xs font-semibold transition ${
-                    p.isActive ? 'text-red-400 hover:text-red-600' : 'text-emerald-500 hover:text-emerald-600'
-                  }`}
-                  style={MONO}
-                >
-                  <Power className="h-3.5 w-3.5" /> {p.isActive ? 'Deactivate' : 'Activate'}
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleActive(p.id)}
+                    className={`inline-flex items-center gap-1 text-xs font-semibold transition ${
+                      p.isActive ? 'text-red-400 hover:text-red-600' : 'text-emerald-500 hover:text-emerald-600'
+                    }`}
+                    style={MONO}
+                  >
+                    <Power className="h-3.5 w-3.5" /> {p.isActive ? 'Deactivate' : 'Activate'}
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-6 border-t border-[color:var(--color-border)] pt-3 text-right">
+                  <span className="text-[10px] font-bold text-[color:var(--color-text-subtle)] uppercase tracking-wider" style={MONO}>
+                    Read Only
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[color:var(--color-border)] pb-3">
-              <h3 className="text-base font-extrabold text-[color:var(--color-text-strong)]">
-                {editingPlan ? 'Edit Membership Plan' : 'Create New Plan'}
-              </h3>
-              <button type="button" onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-[color:var(--color-text-subtle)] hover:bg-[color:var(--color-surface-2)]">
-                <X className="h-5 w-5" />
+      <BottomSheet
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingPlan ? 'Edit Membership Plan' : 'Create New Plan'}
+        titleIcon={<Layers className="h-5 w-5 text-emerald-500" />}
+        maxWidth="md"
+      >
+        {modalError && (
+          <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-500">
+            {modalError}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+              Plan Name *
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Student Monthly Pass"
+              className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs text-[color:var(--color-text-strong)] outline-none focus:border-[color:var(--color-border-strong)] transition"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+                Price *
+              </label>
+              <input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs font-bold text-[color:var(--color-text-strong)] outline-none focus:border-[color:var(--color-border-strong)] transition"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+                Currency
+              </label>
+              <button
+                type="button"
+                onClick={() => setCurrencyModalOpen(true)}
+                className="w-full flex items-center justify-between gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs font-bold text-[color:var(--color-text-strong)] hover:border-[color:var(--color-border-strong)] transition-all"
+                style={MONO}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <span>{currencies.find((c) => c.code === currency)?.flag || '🌐'}</span>
+                  <span>{currency}</span>
+                </div>
+                <Globe className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               </button>
             </div>
-
-            {modalError && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-500">
-                {modalError}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                  Plan Name *
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Student Monthly Pass"
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs text-[color:var(--color-text-strong)] outline-none"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    Price *
-                  </label>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs font-bold text-[color:var(--color-text-strong)] outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    Currency
-                  </label>
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                  >
-                    <option value="NGN">NGN (₦)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="GHS">GHS (GH₵)</option>
-                    <option value="KES">KES (KSh)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    Duration Type
-                  </label>
-                  <select
-                    value={durationType}
-                    onChange={(e) => setDurationType(e.target.value as any)}
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                  >
-                    <option value="DAILY">Daily</option>
-                    <option value="WEEKLY">Weekly</option>
-                    <option value="MONTHLY">Monthly</option>
-                    <option value="CUSTOM">Custom Days</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                    Duration Value
-                  </label>
-                  <input
-                    type="number"
-                    value={durationValue}
-                    onChange={(e) => setDurationValue(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
-                  Allowed Sessions
-                </label>
-                <select
-                  value={allowedSessions}
-                  onChange={(e) => setAllowedSessions(e.target.value)}
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2 text-xs outline-none"
-                >
-                  <option value="MORNING,EVENING">Both (Morning & Evening)</option>
-                  <option value="MORNING">Morning Session Only</option>
-                  <option value="EVENING">Evening Session Only</option>
-                </select>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[color:var(--color-border)]">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl border border-[color:var(--color-border)] px-4 py-2 text-xs font-semibold"
-                  style={MONO}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2 text-xs font-extrabold uppercase tracking-wider"
-                  style={MONO}
-                >
-                  {submitting ? 'Saving...' : editingPlan ? 'Update Plan' : 'Create Plan'}
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <SheetSelect
+              label="Duration Type"
+              value={durationType}
+              onChange={(v) => setDurationType(v as typeof durationType)}
+              options={[
+                { value: 'DAILY',   label: 'Daily',       description: 'Per calendar day',   icon: '📅' },
+                { value: 'WEEKLY',  label: 'Weekly',      description: '7-day rolling period', icon: '📆' },
+                { value: 'MONTHLY', label: 'Monthly',     description: '30-day rolling period', icon: '🗓️' },
+                { value: 'CUSTOM',  label: 'Custom Days', description: 'Specify exact days',  icon: '⚙️' },
+              ]}
+            />
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)] mb-1" style={MONO}>
+                Duration Value
+              </label>
+              <input
+                type="number"
+                value={durationValue}
+                onChange={(e) => setDurationValue(Number(e.target.value))}
+                className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3 py-2.5 text-xs outline-none focus:border-[color:var(--color-border-strong)] transition"
+                required
+              />
+            </div>
+          </div>
+
+          <SheetSelect
+            label="Allowed Sessions"
+            value={allowedSessions}
+            onChange={setAllowedSessions}
+            options={[
+              { value: 'MORNING,EVENING', label: 'Both Sessions',       description: 'Morning & Evening access',   icon: '🌅' },
+              { value: 'MORNING',         label: 'Morning Only',         description: 'Morning session access only', icon: '☀️' },
+              { value: 'EVENING',         label: 'Evening Only',         description: 'Evening session access only', icon: '🌙' },
+            ]}
+          />
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[color:var(--color-border)]">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="rounded-xl border border-[color:var(--color-border)] px-4 py-2.5 text-xs font-semibold hover:bg-[color:var(--color-surface-2)] transition"
+              style={MONO}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-xl bg-[color:var(--color-text-strong)] text-[color:var(--color-surface)] px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+              style={MONO}
+            >
+              {submitting ? 'Saving…' : editingPlan ? 'Update Plan' : 'Create Plan'}
+            </button>
+          </div>
+        </form>
+      </BottomSheet>
+
+      {currencyModalOpen && (
+        <CurrencySheetModal
+          currencies={currencies}
+          selectedCode={currency}
+          onSelect={(c) => {
+            setCurrency(c);
+            setCurrencyModalOpen(false);
+          }}
+          onClose={() => setCurrencyModalOpen(false)}
+        />
       )}
     </div>
   );
