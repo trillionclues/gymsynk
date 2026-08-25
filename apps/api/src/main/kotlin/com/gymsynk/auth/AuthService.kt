@@ -38,7 +38,7 @@ class AuthService(
     // ── Staff login ──────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    fun staffLogin(req: LoginRequest, response: HttpServletResponse): TokenResponse {
+    fun staffLogin(req: LoginRequest, request: HttpServletRequest? = null, response: HttpServletResponse): TokenResponse {
         val cleanEmail = req.email.trim().lowercase()
         val user = userRepository.findByEmailIgnoreCase(cleanEmail).orElseThrow {
             BusinessException(ErrorCodes.UNAUTHORIZED, "Invalid email or password", 401)
@@ -62,7 +62,7 @@ class AuthService(
             refreshTtl,
         )
 
-        setRefreshCookie(response, refreshToken)
+        setRefreshCookie(request, response, refreshToken)
         return TokenResponse(accessToken)
     }
 
@@ -84,7 +84,7 @@ class AuthService(
         val newRefreshToken = jwtService.generateRefreshToken()
 
         redis.opsForValue().set("refresh:$newRefreshToken", value, refreshTtl)
-        setRefreshCookie(response, newRefreshToken)
+        setRefreshCookie(request, response, newRefreshToken)
 
         return TokenResponse(accessToken)
     }
@@ -95,7 +95,7 @@ class AuthService(
         extractRefreshCookie(request)?.let { redis.delete("refresh:$it") }
         response.addHeader(
             "Set-Cookie",
-            "refresh_token=; HttpOnly; Path=/; Max-Age=0; SameSite=None; Secure",
+            "refresh_token=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax",
         )
     }
 
@@ -125,7 +125,7 @@ class AuthService(
     }
 
     @Transactional(readOnly = true)
-    fun verifyOtp(req: OtpVerifyRequest, response: HttpServletResponse): TokenResponse {
+    fun verifyOtp(req: OtpVerifyRequest, request: HttpServletRequest? = null, response: HttpServletResponse): TokenResponse {
         val cleanIdentifier = req.identifier.trim().lowercase()
         val stored = redis.opsForValue().getAndDelete("otp:$cleanIdentifier")
             ?: throw BusinessException(ErrorCodes.TOKEN_EXPIRED, "OTP expired or already used", 401)
@@ -150,20 +150,18 @@ class AuthService(
             "${user.id}:${user.role.name}:$orgId",
             refreshTtl,
         )
-        setRefreshCookie(response, refreshToken)
+        setRefreshCookie(request, response, refreshToken)
         return TokenResponse(accessToken)
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private fun setRefreshCookie(response: HttpServletResponse, token: String) {
-        // SameSite=None; Secure is required when frontend and API are on different
-        // origins (e.g. Vercel frontend + ngrok/prod API). Spring's Cookie API
-        // doesn't support SameSite directly — set it via the raw header.
+    private fun setRefreshCookie(request: HttpServletRequest?, response: HttpServletResponse, token: String) {
         val maxAge = refreshTtl.seconds.toInt()
-        val secure = true   // ngrok and Vercel are both HTTPS
-        val cookie = "refresh_token=$token; HttpOnly; Path=/; Max-Age=$maxAge;" +
-                     " SameSite=None${if (secure) "; Secure" else ""}"
+        val isSecure = request?.isSecure == true || request?.getHeader("X-Forwarded-Proto") == "https"
+        val sameSite = if (isSecure) "None" else "Lax"
+        val secureFlag = if (isSecure) "; Secure" else ""
+        val cookie = "refresh_token=$token; HttpOnly; Path=/; Max-Age=$maxAge; SameSite=$sameSite$secureFlag"
         response.addHeader("Set-Cookie", cookie)
     }
 

@@ -19,6 +19,6 @@ class AuditLog(
     @Column(name = "old_value", columnDefinition = "jsonb") val oldValue: String? = null,
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "new_value", columnDefinition = "jsonb") val newValue: String? = null,
-    @Column(name = "ip_address", length = 45) val ipAddress: String? = null,
+    @Column(name = "ip_address", columnDefinition = "inet") val ipAddress: String? = null,
     @Column(name = "created_at", updatable = false) val createdAt: Instant = Instant.now(),
 )
