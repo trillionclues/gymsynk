@@ -51,8 +51,9 @@ class SetupService(
             throw BusinessException(ErrorCodes.CONFLICT, "First-run setup has already been completed", 400)
         }
 
-        if (userRepository.findByEmail(req.adminEmail).isPresent) {
-            throw BusinessException(ErrorCodes.CONFLICT, "User with email ${req.adminEmail} already exists", 400)
+        val cleanAdminEmail = req.adminEmail.trim().lowercase()
+        if (userRepository.findByEmailIgnoreCase(cleanAdminEmail).isPresent) {
+            throw BusinessException(ErrorCodes.CONFLICT, "User with email $cleanAdminEmail already exists", 400)
         }
 
         val slug = req.orgName.lowercase(Locale.ROOT)
@@ -78,6 +79,12 @@ class SetupService(
                 org = organization,
                 name = req.locationName,
                 address = req.address,
+                latitude = req.latitude,
+                longitude = req.longitude,
+                city = req.city,
+                country = req.country,
+                placeId = req.placeId,
+                geofenceRadiusMeters = req.geofenceRadiusMeters ?: 100,
             )
         )
 
@@ -118,7 +125,7 @@ class SetupService(
         val admin = userRepository.save(
             User(
                 org = organization,
-                email = req.adminEmail,
+                email = cleanAdminEmail,
                 passwordHash = passwordEncoder.encode(req.adminPassword),
                 firstName = req.adminFirstName,
                 lastName = req.adminLastName,

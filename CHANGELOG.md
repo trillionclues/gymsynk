@@ -1,63 +1,48 @@
 # Changelog
 
-All notable changes to GymSynk are documented here.
+All notable changes to GymSynk are documented here, categorized by major system component and feature area.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [Unreleased]
+## [1.0.0] — Feature Highlights & System Capabilities
 
-Active documentation and design work toward the v1.0.0 release.
-See [ROADMAP.md](./ROADMAP.md) for the full v1.0 scope.
+### 1. First-Run Setup Wizard & Organization Onboarding
+- **6-Step Setup Flow (`/setup`)**: Complete guided onboarding for new gym installations covering Gym Details, Location, Operating Hours, Payment Strategy, Plans, and Admin Credentials.
+- **OpenStreetMap (OSM) Live Geocoding**: Integrated Nominatim API for real-time address autocomplete and location verification without third-party API key fees.
+- **GPS Precision & Geofencing**: Automatic capture of exact GPS coordinates (`latitude`, `longitude`), `city`, `country`, and OSM `place_id`, with interactive geofence radius configuration (`50m`, `100m`, `250m`, `500m`).
+- **World Currency Selection**: Searchable `<CurrencySheetModal>` supporting 160+ world currencies complete with flag emojis, symbols, and ISO codes.
+- **Gateway Credential Provisioning**: Step 4 inline unlocking for `FULL_PROCESSING` payment gateways (Paystack & LemonSqueezy) with test/live public keys, secret keys, and webhook secrets.
 
-### Added
-- Project documentation suite: PRD, System Design, Implementation Guide, Workflow Guide, Design System, Deployment Guide, Contributing Guide
-- Database schema: 10-table multi-org, multi-location PostgreSQL design with Flyway migration order (V1–V10)
-- Design system: minimal neutral token system (light + dark mode) — near-black primary, muted accent, desaturated status/plan/session colors
-- Docker Compose production stack design: Traefik v3 (auto-TLS), API, web, Postgres 16, Redis 7
-- Dev Compose design: Postgres + Redis only, no app containers
-- `.env.example` with all supported environment variables
-- `setup-cli.sh` spec: interactive first-run script — generates secrets, writes `.env`, starts stack, polls health, opens browser to setup wizard
+### 2. Unified UI Component System & Sheet Primitives
+- **Gesture-Friendly `<BottomSheet>`**: Mobile & desktop modal primitive featuring swipe-to-close touch delta tracking, backdrop blur, body scroll locking, and mobile drag handle pill.
+- **Searchable `<SheetSelect>`**: Touch-friendly dropdown picker component with instant filtering and custom icons/badges, replacing native browser `<select>` elements.
+- **Calendar `<DateRangeSheetModal>`**: Custom date range picker bottom-sheet with quick presets (**Last 7 Days**, **14 Days**, **30 Days**) and a strict 30-day range boundary constraint.
 
-### Changed
-- MVP scope tightened: CASH_ONLY is the only payment mode in v1.0; TRACK_AND_RECEIPT and FULL_PROCESSING move to v1.1 (strategy interface still implemented from v1.0 so no code changes needed at v1.1)
-- Admin analytics dashboard, staff management, audit log viewer, CSV export, and offline check-in sync (IndexedDB + Background Sync) moved to v1.1
-- Gateway strategy clarified: LemonSqueezy is the reference implementation for FULL_PROCESSING; Paystack is the secondary implementation for NGN deployments. Flutterwave removed from scope. Gateway-hosted redirect only — no direct card entry through the portal.
-- PWA theme color resolved to `#18181b` (near-black) — replaces the undecided `#4F46E5` placeholder
-- OTP delivery confirmed as email-only in v1.0 (via Resend/SMTP); SMS (Termii/Twilio) is v1.5. Setup script no longer prompts for SMS credentials.
-- `audit_log.action` enum clarified: `CHECK_IN_OVERRIDE` added as a distinct action type separate from `CHECK_IN` for independent filterability in the audit log UI
-- Terminology standardised: `TRACK_AND_RECEIPT` used consistently across all docs (was `Track & Receipt` in some places). Flutterwave references removed.
-- Backend language: Java 21 remains the documented default; Kotlin noted as a fully supported alternative — Spring Boot 3.4 has first-class Kotlin support and the package structure applies equally to either language.
+### 3. Role-Based Access Control (RBAC) & Security
+- **Dynamic Sidebar Navigation**: Sidebar automatically filters visible routes based on `user.role` (`ADMIN` vs `CASHIER`).
+- **Route Authorization Enforcement**: Cashier role restricted from accessing financial configuration, staff management, analytics, and audit logs.
+- **Read-Only Portal Interfaces**: Cashiers viewing Plans (`/dashboard/plans`) or Staff (`/dashboard/staff`) see a clean read-only interface with administrative creation/editing actions hidden.
+- **Spring Security Integration**: `@PreAuthorize` method security annotations across all REST endpoints enforcing `ROLE_ADMIN` vs `ROLE_CASHIER`.
+
+### 4. Admin Portal Sections (Phase 2.6)
+- **Plans Management (`/dashboard/plans`)**: Complete CRUD operations for membership plans, pricing tiers, duration types, allowed sessions, and active/inactive status toggling.
+- **Staff Management (`/dashboard/staff`)**: Staff invitation flow, system role assignment (`ADMIN`, `CASHIER`, `FLOOR_STAFF`), and account deactivation.
+- **Payments Log (`/dashboard/payments`)**: Paginated transaction history with member name resolution, currency formatting, external reference tracking, and payment status filter chips (`COMPLETED`, `PENDING`, `FAILED`, `REFUNDED`).
+- **Analytics Dashboard (`/dashboard/analytics`)**: Interactive Recharts Attendance Area Chart, Revenue Bar Chart, and 7×24 Peak Density Heatmap grid analyzing check-in volume by day of week and hour of day.
+- **Audit Trail (`/dashboard/audit`)**: Filterable security activity log with expandable JSON payload diff viewer for system action auditing.
+
+### 5. Backend Architecture & Database Migrations
+- **Spring Boot 3.4 (Kotlin)**: Kotlin REST controllers and query services using virtual threads for I/O operations.
+- **Payment Strategy Pattern**: Strongly-typed strategy handlers (`PaystackPaymentStrategy`, `LemonSqueezyPaymentStrategy`) for checkout URL generation and direct active verification fallbacks.
+- **Flyway Database Migrations (V1–V12)**: Database migrations including audit logging (`V10`), member number sequence (`V11`), and location precision columns (`V12`).
 
 ---
 
 ## Versioning Policy
 
 - **Patch** (`1.0.x`) — bug fixes, security patches, documentation corrections. No API or schema changes.
-- **Minor** (`1.x.0`) — new features, additive API changes, additive schema migrations. Backwards compatible. No operator action required beyond `docker compose up -d --build`.
-- **Major** (`x.0.0`) — breaking changes: schema column drops/renames, API breaking changes, config key renames. Explicit operator migration instructions provided in the release notes and `CHANGELOG.md`.
-
-Flyway migrations are **always additive within a minor version**. Breaking schema changes are gated behind major version bumps.
-
-<!-- Template for future releases:
-
-## [1.1.0] — YYYY-MM-DD
-
-### Added
--
-
-### Changed
--
-
-### Fixed
--
-
-### Removed
--
-
-### Security
--
-
--->
+- **Minor** (`1.x.0`) — new features, additive API changes, additive schema migrations. Backwards compatible.
+- **Major** (`x.0.0`) — breaking changes: schema column drops/renames, API breaking changes.

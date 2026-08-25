@@ -16,6 +16,12 @@ class Location(
 
     @Column(nullable = false) var name: String,
     var address: String? = null,
+    var latitude: Double? = null,
+    var longitude: Double? = null,
+    var city: String? = null,
+    var country: String? = null,
+    @Column(name = "place_id") var placeId: String? = null,
+    @Column(name = "geofence_radius_meters") var geofenceRadiusMeters: Int = 100,
     @Column(name = "is_active") var isActive: Boolean = true,
 
     @Column(name = "created_at", updatable = false) val createdAt: Instant = Instant.now(),

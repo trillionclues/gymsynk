@@ -34,8 +34,9 @@ class StaffService(
             BusinessException(ErrorCodes.UNAUTHORIZED, "Organization not found", 404)
         }
 
-        if (userRepository.findByEmail(req.email).isPresent) {
-            throw BusinessException(ErrorCodes.CONFLICT, "User with email ${req.email} already exists", 400)
+        val cleanEmail = req.email.trim().lowercase()
+        if (userRepository.findByEmailIgnoreCase(cleanEmail).isPresent) {
+            throw BusinessException(ErrorCodes.CONFLICT, "User with email $cleanEmail already exists", 400)
         }
 
         val parsedRole = try {
@@ -47,7 +48,7 @@ class StaffService(
         val staffUser = userRepository.save(
             User(
                 org = org,
-                email = req.email,
+                email = cleanEmail,
                 phone = req.phone,
                 passwordHash = passwordEncoder.encode(req.password),
                 firstName = req.firstName,

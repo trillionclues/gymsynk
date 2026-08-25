@@ -39,7 +39,8 @@ class AuthService(
 
     @Transactional(readOnly = true)
     fun staffLogin(req: LoginRequest, response: HttpServletResponse): TokenResponse {
-        val user = userRepository.findByEmail(req.email).orElseThrow {
+        val cleanEmail = req.email.trim().lowercase()
+        val user = userRepository.findByEmailIgnoreCase(cleanEmail).orElseThrow {
             BusinessException(ErrorCodes.UNAUTHORIZED, "Invalid email or password", 401)
         }
 
@@ -101,36 +102,38 @@ class AuthService(
     // ── Member OTP login ─────────────────────────────────────────────────────
 
     fun requestOtp(identifier: String) {
-        val rateKey  = "otp_rate:$identifier"
+        val cleanIdentifier = identifier.trim().lowercase()
+        val rateKey  = "otp_rate:$cleanIdentifier"
         val attempts = redis.opsForValue().increment(rateKey) ?: 1L
         if (attempts == 1L) redis.expire(rateKey, Duration.ofMinutes(10))
         if (attempts > otpMaxRequests)
             throw BusinessException("OTP_RATE_LIMIT", "Too many OTP requests — try again in 10 minutes", 429)
 
         // Verify member exists — silent 404 to avoid user enumeration in logs
-        userRepository.findByEmail(identifier).orElseThrow {
+        userRepository.findByEmailIgnoreCase(cleanIdentifier).orElseThrow {
             BusinessException(ErrorCodes.MEMBER_NOT_FOUND, "Member not found", 404)
         }
 
         val code = "%06d".format(rng.nextInt(1_000_000))
-        redis.opsForValue().set("otp:$identifier", code, Duration.ofSeconds(otpTtlSeconds))
+        redis.opsForValue().set("otp:$cleanIdentifier", code, Duration.ofSeconds(otpTtlSeconds))
 
         // Send via Resend SMTP — fires async, never crashes the request
-        emailService.sendOtp(identifier, code, otpTtlSeconds / 60)
+        emailService.sendOtp(cleanIdentifier, code, otpTtlSeconds / 60)
 
         // Keep dev log so you can test without checking email
-        log.debug("OTP for {} → {}", identifier, code)
+        log.debug("OTP for {} → {}", cleanIdentifier, code)
     }
 
     @Transactional(readOnly = true)
     fun verifyOtp(req: OtpVerifyRequest, response: HttpServletResponse): TokenResponse {
-        val stored = redis.opsForValue().getAndDelete("otp:${req.identifier}")
+        val cleanIdentifier = req.identifier.trim().lowercase()
+        val stored = redis.opsForValue().getAndDelete("otp:$cleanIdentifier")
             ?: throw BusinessException(ErrorCodes.TOKEN_EXPIRED, "OTP expired or already used", 401)
 
         if (stored != req.code)
             throw BusinessException(ErrorCodes.TOKEN_INVALID, "Invalid OTP", 401)
 
-        val user = userRepository.findByEmail(req.identifier).orElseThrow {
+        val user = userRepository.findByEmailIgnoreCase(cleanIdentifier).orElseThrow {
             BusinessException(ErrorCodes.MEMBER_NOT_FOUND, "Member not found", 404)
         }
 

@@ -30,6 +30,22 @@ export type PaymentGatewayConfig = {
   webhookSecret?: string;
 };
 
+export type NominatimLocationResult = {
+  place_id: number;
+  lat: string;
+  lon: string;
+  display_name: string;
+  address?: {
+    road?: string;
+    suburb?: string;
+    city?: string;
+    town?: string;
+    state?: string;
+    country?: string;
+    postcode?: string;
+  };
+};
+
 export type SetupPayload = {
   orgName: string;
   currency: string;
@@ -39,6 +55,12 @@ export type SetupPayload = {
   locationName: string;
   address?: string;
   phone?: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  country?: string;
+  placeId?: string;
+  geofenceRadiusMeters?: number;
   operatingHours: OperatingHourPayload[];
   plans: MembershipPlanPayload[];
   adminFirstName: string;
@@ -101,5 +123,16 @@ export async function fetchWorldCurrencies(): Promise<CurrencyItem[]> {
     return Array.from(map.values());
   } catch {
     return FALLBACK_CURRENCIES;
+  }
+}
+
+export async function searchOpenStreetMapAddresses(query: string): Promise<NominatimLocationResult[]> {
+  if (!query || query.trim().length < 3) return [];
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
   }
 }
