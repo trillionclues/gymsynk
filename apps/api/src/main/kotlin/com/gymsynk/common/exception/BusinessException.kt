@@ -15,4 +15,5 @@ object ErrorCodes {
     const val WRONG_DAY          = "WRONG_DAY"
     const val ALREADY_CHECKED_IN = "ALREADY_CHECKED_IN"
     const val UNAUTHORIZED       = "UNAUTHORIZED"
+    const val CONFLICT           = "CONFLICT"
 }

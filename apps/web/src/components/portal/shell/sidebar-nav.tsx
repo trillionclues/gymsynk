@@ -83,10 +83,63 @@ function IconMenu() {
   );
 }
 
+function IconPlans() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[18px] w-[18px]">
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  );
+}
+
+function IconStaff() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[18px] w-[18px]">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function IconPayments() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[18px] w-[18px]">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+    </svg>
+  );
+}
+
+function IconAnalytics() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[18px] w-[18px]">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6"  y1="20" x2="6"  y2="14" />
+    </svg>
+  );
+}
+
+function IconAudit() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[18px] w-[18px]">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
 const primaryNav = [
-  { href: '/dashboard',         label: 'Dashboard', Icon: IconDashboard },
-  { href: '/dashboard/scanner', label: 'Scanner',   Icon: IconScanner   },
-  { href: '/dashboard/members', label: 'Members',   Icon: IconMembers   },
+  { href: '/dashboard',           label: 'Dashboard', Icon: IconDashboard },
+  { href: '/dashboard/scanner',   label: 'Scanner',   Icon: IconScanner   },
+  { href: '/dashboard/members',   label: 'Members',   Icon: IconMembers,   roles: ['ADMIN', 'CASHIER'] },
+  { href: '/dashboard/plans',     label: 'Plans',     Icon: IconPlans,     roles: ['ADMIN', 'CASHIER'] },
+  { href: '/dashboard/staff',     label: 'Staff',     Icon: IconStaff,     roles: ['ADMIN'] },
+  { href: '/dashboard/payments',  label: 'Payments',  Icon: IconPayments,  roles: ['ADMIN', 'CASHIER'] },
+  { href: '/dashboard/analytics', label: 'Analytics', Icon: IconAnalytics, roles: ['ADMIN'] },
+  { href: '/dashboard/audit',     label: 'Audit',     Icon: IconAudit,     roles: ['ADMIN'] },
 ];
 
 function RailBtn({
@@ -272,7 +325,9 @@ export function SidebarNav({
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3">
-          {primaryNav.map(({ href, label, Icon }) => {
+          {primaryNav
+            .filter((item) => !item.roles || (user?.role && item.roles.includes(user.role as any)))
+            .map(({ href, label, Icon }) => {
             const active =
               pathname === href ||
               (href !== '/dashboard' && pathname.startsWith(href));

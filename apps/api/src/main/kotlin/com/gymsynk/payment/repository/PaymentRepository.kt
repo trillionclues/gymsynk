@@ -1,6 +1,8 @@
 package com.gymsynk.payment.repository
 
 import com.gymsynk.payment.entity.Payment
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -21,4 +23,9 @@ interface PaymentRepository : JpaRepository<Payment, UUID> {
         start: Instant,
         end: Instant,
     ): BigDecimal
+
+    fun findByOrgId(orgId: UUID, pageable: Pageable): Page<Payment>
+
+    fun findByOrgIdAndPaymentStatus(orgId: UUID, paymentStatus: String, pageable: Pageable): Page<Payment>
 }
+

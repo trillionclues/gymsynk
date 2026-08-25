@@ -7,5 +7,6 @@ import java.util.UUID
 
 @Repository
 interface MembershipPlanRepository : JpaRepository<MembershipPlan, UUID> {
+    fun findByOrgId(orgId: UUID): List<MembershipPlan>
     fun findByOrgIdAndIsActiveTrue(orgId: UUID): List<MembershipPlan>
 }
