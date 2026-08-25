@@ -14,9 +14,10 @@ class AuthController(private val authService: AuthService) {
     @PostMapping("/login")
     fun login(
         @RequestBody @Valid req: LoginRequest,
+        request: HttpServletRequest,
         response: HttpServletResponse,
     ): ResponseEntity<TokenResponse> =
-        ResponseEntity.ok(authService.staffLogin(req, response))
+        ResponseEntity.ok(authService.staffLogin(req, request, response))
 
     @PostMapping("/refresh")
     fun refresh(
@@ -43,7 +44,8 @@ class AuthController(private val authService: AuthService) {
     @PostMapping("/otp/verify")
     fun verifyOtp(
         @RequestBody @Valid req: OtpVerifyRequest,
+        request: HttpServletRequest,
         response: HttpServletResponse,
     ): ResponseEntity<TokenResponse> =
-        ResponseEntity.ok(authService.verifyOtp(req, response))
+        ResponseEntity.ok(authService.verifyOtp(req, request, response))
 }

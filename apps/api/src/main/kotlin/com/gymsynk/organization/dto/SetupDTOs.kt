@@ -45,6 +45,12 @@ data class SetupRequest(
     @field:NotBlank val locationName: String,
     val address: String? = null,
     val phone: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val city: String? = null,
+    val country: String? = null,
+    val placeId: String? = null,
+    val geofenceRadiusMeters: Int? = 100,
 
     val operatingHours: List<OperatingHourRequest> = emptyList(),
 

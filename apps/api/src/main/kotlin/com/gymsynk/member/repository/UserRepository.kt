@@ -11,8 +11,10 @@ import java.util.UUID
 @Repository
 interface UserRepository : JpaRepository<User, UUID> {
     fun findByEmail(email: String): Optional<User>
+    fun findByEmailIgnoreCase(email: String): Optional<User>
     fun findByMemberNumber(memberNumber: String): Optional<User>
     fun existsByEmail(email: String): Boolean
+    fun existsByEmailIgnoreCase(email: String): Boolean
 
     @Query("""
         SELECT u FROM User u

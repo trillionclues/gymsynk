@@ -24,7 +24,8 @@ class SetupController(
     @PostMapping
     fun setup(
         @Valid @RequestBody request: SetupRequest,
+        servletRequest: jakarta.servlet.http.HttpServletRequest,
         response: HttpServletResponse,
     ): ResponseEntity<TokenResponse> =
-        ResponseEntity.ok(setupService.executeSetup(request, response))
+        ResponseEntity.ok(setupService.executeSetup(request, servletRequest, response))
 }

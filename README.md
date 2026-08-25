@@ -2,7 +2,7 @@
 
 # GymSynk
 
-**Self-hosted gym management — QR check-in, member tracking, and real-time cashier tooling.**
+**Self-hosted gym management with QR check-in, member tracking and real-time payments management.**
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -17,7 +17,7 @@
 
 ## Why GymSynk?
 
-Most small gyms run on institutional memory where the cashier has to know which members are on weekly or monthly plans by manually verifies attendance from their head. That works until they're absent — and then nothing works.
+Most small gyms run on institutional memory where the cashier has to know which members are on weekly or monthly plans by manually verifies attendance from their head. That works until they're absent.
 
 GymSynk replaces that with a structured digital system that doesn't take away cashier's control. The system gives them the tools to do it with precision, a full audit trail, and data the gym owner can actually act on.
 
@@ -51,20 +51,27 @@ QR tokens are opaque 64-char hex strings stored in Redis with a 120-second TTL. 
 ## Features
 
 ### Cashier & Admin Portal
+
 - **Live check-in feed**: real-time WebSocket stream of every scan
-- **Member registration**: multi-step form with plan assignment and payment logging
 - **QR scanner station**: full-screen camera view for tablet mounting at gym entrance
 - **Manual check-in**: for non-scannable situations; includes override flow for expired plans
-- **Expiry alerts**: track members expiring within 7 days
-- **Attendance heatmap & Revenue analytics**: track peak times and charts by plan type
-- **Full audit log & Staff management** :invite/deactivate cashiers
-- **CSV export**: members, check-ins, payments filterable by date range
+- **Member registration**: multi-step form with plan assignment and payment logging
+- **Plans management**: CRUD operations for membership plans, pricing, duration types, and allowed session rules (`/dashboard/plans`)
+- **Staff management**: invite, assign roles, and deactivate cashier accounts (`/dashboard/staff`)
+- **Payments log**: paginated transaction history with status filter chips (`/dashboard/payments`)
+- **Analytics & 7×24 Heatmap**: interactive Recharts attendance area chart, revenue bar chart, and 7×24 peak density heatmap (`/dashboard/analytics`)
+- **Audit log**: security activity log with expandable JSON payload diff viewer (`/dashboard/audit`)
+- **OpenStreetMap geocoding**: real-time address lookup, GPS coordinate capture, and geofence boundary configuration
+- **Unified gesture UI**: mobile-friendly `<BottomSheet>`, `<SheetSelect>`, and `<DateRangeSheetModal>` primitives
+- **Role-based access control (RBAC)**: dynamic sidebar navigation filtering and read-only UI enforcement for cashiers
 
 ### Member PWA
+
 - **Installable**: Add to home screen on Android and iOS, just like a native app
 - **OTP login**: email address + 6-digit code, no password to remember
 - **QR check-in**: tap to generate, 120s countdown, single-use
-- **Offline fallback & Renewal CTA** — static member card  when no signal & 5days AOT renewal CTA
+- **Offline fallback & Renewal CTA**: static member card when offline and 5-day advance renewal prompt
+
 ---
 
 ## Quick Start
@@ -91,36 +98,28 @@ The script prompts for your domain, ACME email, SMTP credentials, and payment mo
 
 Complete the 6-step wizard in your browser:
 
-1. **Gym details**: name, timezone, currency (avatar auto-generated from name)
-2. **Location**: branch name and address
+1. **Gym details**: name, timezone, searchable 160+ world currency picker (`<CurrencySheetModal>`)
+2. **Location**: branch name, OpenStreetMap live geocoding (GPS latitude/longitude), and geofence radius selector
 3. **Operating hours**: morning/evening session times per day
-4. **Payment mode**: Cash Only (`CASH_ONLY`), Track and Receipt (`TRACK_AND_RECEIPT`), or Full Processing (`FULL_PROCESSING`)
+4. **Payment mode**: Cash Only (`CASH_ONLY`), Track and Receipt (`TRACK_AND_RECEIPT`), or Full Processing (`FULL_PROCESSING` with Paystack & LemonSqueezy credential unlocking)
 5. **Membership plans**: edit the pre-filled Daily / Weekly / Monthly templates
-6. **Admin account**: your email and password
+6. **Admin account**: your name, email, and password
 
-After step 6 the wizard is permanently disabled and you're redirected to the cashier login.
+After step 6 the wizard is permanently disabled and you're redirected to the portal.
 
 ---
 
-## Roles
+## Roles & Access Matrix
 
-| Role | Who | What they can do |
-|:-----|:----|:-----------------|
-| `ADMIN` | Gym owner / manager | Full access — config, plans, analytics, staff, audit log |
-| `CASHIER` | Front desk | Register members, check-in, log payments — no config or financials |
-| `MEMBER` | Gym attendee | Own profile, QR check-in, check-in history |
+| Role      | Navigation & Permissions                                                                                                                                        |
+| :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ADMIN`   | **Full Administrative Access**: Organization config, plans CRUD, staff invitation/deactivation, payments log, analytics dashboard, audit trail                  |
+| `CASHIER` | **Operational Access**: Dashboard, scanner station, member registration, payments log, plans (read-only mode). Restricted from staff, analytics, and audit logs |
+| `MEMBER`  | **PWA Access**: Personal profile, QR check-in generation, check-in history, active plan status                                                                  |
 
 ---
 
 ## Performance Targets
-
-| Metric | Target |
-|:-------|:-------|
-| QR check-in validation | < 200ms p99 |
-| WebSocket check-in update | < 1s to cashier screen |
-| Member search | < 300ms |
-| Dashboard first paint | < 2s |
-| Concurrent check-ins | 50+ simultaneous |
 
 Kotlin virtual threads handle I/O-bound check-in bursts without thread pool exhaustion. The entire stack runs comfortably on a 1 vCPU / 2 GiB VPS.
 
@@ -150,9 +149,12 @@ cd ../..
 pnpm dev:web
 ```
 
-API on `:8080` · Frontend on `:3000` · Swagger UI at `http://localhost:8080/api/v1/swagger-ui.html`
+API on `:8080` · Frontend on `:3000`
+Demo credentials
 
-Seed credentials: `admin@gymsynk.com` / `password` and `cashier@gymsynk.com` / `password`
+Admin: admin@gymsynk.com / password
+Cashier: cashier@gymsynk.com / password
+Member: member@gymsynk.com / OTP login
 
 ---
 
@@ -167,11 +169,3 @@ See [ROADMAP.md](./ROADMAP.md) for what's planned and [CHANGELOG.md](./CHANGELOG
 GymSynk is licensed under **GNU AGPL-3.0**.
 
 There is no premium tier. Every feature is open source.
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for local dev setup, code standards, branch conventions, and how to run the test suite.
-
-Security vulnerabilities: email `security@gymsynk.dev`. Do not open a public issue.

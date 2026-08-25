@@ -107,6 +107,13 @@ export function SetupWizard() {
   const [locationName, setLocationName] = useState('Main Branch');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
+  const [latitude, setLatitude] = useState<number | undefined>(undefined);
+  const [longitude, setLongitude] = useState<number | undefined>(undefined);
+  const [city, setCity] = useState<string | undefined>(undefined);
+  const [country, setCountry] = useState<string | undefined>(undefined);
+  const [placeId, setPlaceId] = useState<string | undefined>(undefined);
+  const [geofenceRadiusMeters, setGeofenceRadiusMeters] = useState<number>(100);
+
   const [paymentMode, setPaymentMode] = useState<'CASH_ONLY' | 'TRACK_AND_RECEIPT' | 'FULL_PROCESSING'>('CASH_ONLY');
 
   const [gwProvider, setGwProvider] = useState<'PAYSTACK' | 'LEMONSQUEEZY' | 'FLUTTERWAVE'>('PAYSTACK');
@@ -208,6 +215,12 @@ export function SetupWizard() {
       locationName: locationName.trim(),
       address: address.trim() || undefined,
       phone: phone.trim() || undefined,
+      latitude,
+      longitude,
+      city,
+      country,
+      placeId,
+      geofenceRadiusMeters,
       operatingHours,
       plans: plans.map((p) => ({ ...p, currency })),
       adminFirstName: adminFirstName.trim(),
@@ -327,6 +340,18 @@ export function SetupWizard() {
             setAddress={setAddress}
             phone={phone}
             setPhone={setPhone}
+            latitude={latitude}
+            setLatitude={setLatitude}
+            longitude={longitude}
+            setLongitude={setLongitude}
+            city={city}
+            setCity={setCity}
+            country={country}
+            setCountry={setCountry}
+            placeId={placeId}
+            setPlaceId={setPlaceId}
+            geofenceRadiusMeters={geofenceRadiusMeters}
+            setGeofenceRadiusMeters={setGeofenceRadiusMeters}
           />
         )}
         {step === 3 && (
