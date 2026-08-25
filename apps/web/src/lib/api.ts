@@ -1,7 +1,21 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+const getApiBaseUrl = () => {
+  // Using relative '/api/v1' so requests are same-origin and pass through Next.js rewrites to store cookies.
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL?.startsWith('/')
+      ? process.env.NEXT_PUBLIC_API_URL
+      : '/api/v1';
+  }
+  return (
+    process.env.INTERNAL_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:8080/api/v1'
+  );
+};
+
+const apiBaseUrl = getApiBaseUrl();
 
 export const api = axios.create({
   baseURL: apiBaseUrl,
