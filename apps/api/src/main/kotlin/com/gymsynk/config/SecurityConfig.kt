@@ -33,7 +33,7 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.requestMatchers(
-                    "/auth/**", "/setup", "/actuator/**",
+                    "/auth/**", "/setup", "/setup/**", "/actuator/**",
                     "/swagger-ui/**", "/v3/api-docs/**",
                     "/ws/**",           // WebSocket handshake + SockJS endpoints
                 ).permitAll()
