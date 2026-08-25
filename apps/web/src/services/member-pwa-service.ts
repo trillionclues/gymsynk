@@ -100,6 +100,6 @@ export async function getMyCheckInHistory(
   page = 0,
   size = 20,
 ): Promise<{ items: CheckInHistoryItem[]; totalPages: number }> {
-  const { data } = await api.get('/checkin/history', { params: { page, size } });
+  const { data } = await api.get('/checkins/history', { params: { page, size } });
   return data as { items: CheckInHistoryItem[]; totalPages: number };
 }

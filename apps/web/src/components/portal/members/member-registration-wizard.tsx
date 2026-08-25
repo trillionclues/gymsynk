@@ -6,6 +6,7 @@ import { CheckCircle2, LoaderCircle, UserRoundPlus, X } from 'lucide-react';
 
 import { registerMember } from '@/services/member-service';
 import { useMemberRegistrationOptions } from '@/hooks/use-member-registration-options';
+import { cn } from '@/lib/utils';
 
 type Step = 1 | 2 | 3;
 
@@ -278,6 +279,11 @@ function StepOne({
   onNext: () => void;
   canContinue: boolean;
 }) {
+  const [touched, setTouched] = useState({ email: false, phone: false });
+
+  const emailInvalid = email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const emailErr = touched.email && emailInvalid ? 'Enter a valid email address' : null;
+
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2">
@@ -300,13 +306,14 @@ function StepOne({
           />
         </Field>
       </div>
-      <Field label="Email address">
+      <Field label="Email address" error={emailErr}>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onBlur={() => setTouched((t) => ({ ...t, email: true }))}
           placeholder="john@example.com"
-          className={inputClass}
+          className={cn(inputClass, emailErr && 'border-[color:var(--color-status-expired)]')}
         />
       </Field>
       <Field label="Phone number">
@@ -314,6 +321,7 @@ function StepOne({
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
           placeholder="+234 800 000 0000"
           className={inputClass}
         />
@@ -321,9 +329,9 @@ function StepOne({
       <div className="flex justify-end pt-2">
         <button
           type="button"
-          disabled={!canContinue}
+          disabled={!canContinue || Boolean(emailInvalid)}
           onClick={onNext}
-          className="rounded-xl bg-[color:var(--color-primary)] px-4 py-2 text-xs font-semibold text-[color:var(--color-text-on-primary)] transition disabled:opacity-50"
+          className="rounded-xl bg-[color:var(--color-primary)] px-4 py-2.5 text-xs font-semibold text-[color:var(--color-text-on-primary)] transition-all duration-150 active:scale-[0.98] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           Next: Plan & Location →
         </button>
@@ -403,7 +411,7 @@ function StepTwo({
           type="button"
           disabled={!canContinue}
           onClick={onNext}
-          className="rounded-xl bg-[color:var(--color-primary)] px-4 py-2 text-xs font-semibold text-[color:var(--color-text-on-primary)] transition disabled:opacity-50"
+          className="rounded-xl bg-[color:var(--color-primary)] px-4 py-2.5 text-xs font-semibold text-[color:var(--color-text-on-primary)] transition-all duration-150 active:scale-[0.98] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           Next: Review →
         </button>
@@ -451,7 +459,7 @@ function StepThree({
           type="button"
           onClick={onSubmit}
           disabled={submitting}
-          className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--color-primary)] px-4 py-2 text-xs font-semibold text-[color:var(--color-text-on-primary)] transition disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--color-primary)] px-4 py-2.5 text-xs font-semibold text-[color:var(--color-text-on-primary)] transition-all duration-150 active:scale-[0.98] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
         >
           {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
           Register Member
@@ -461,11 +469,12 @@ function StepThree({
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({ label, error, children }: { label: string; error?: string | null; children: ReactNode }) {
   return (
     <label className="block space-y-1.5">
       <span className="text-xs font-semibold text-[color:var(--color-text-strong)]">{label}</span>
       {children}
+      {error && <p className="text-[11px] text-[color:var(--color-status-expired)] mt-1">{error}</p>}
     </label>
   );
 }
@@ -480,8 +489,8 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3.5 py-2 text-xs text-[color:var(--color-text-strong)] outline-none transition placeholder:text-[color:var(--color-text-subtle)] focus:border-[color:var(--color-border-strong)] focus:ring-2 focus:ring-[color:var(--color-accent-muted)]';
+  'w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3.5 py-2.5 text-xs text-[color:var(--color-text-strong)] outline-none transition placeholder:text-[color:var(--color-text-subtle)] focus:border-[color:var(--color-border-strong)] focus:ring-2 focus:ring-[color:var(--color-accent-muted)]';
 
 const selectClass = inputClass;
 const secondaryButtonClass =
-  'rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3.5 py-2 text-xs font-medium text-[color:var(--color-text-strong)] transition hover:border-[color:var(--color-border-strong)]';
+  'rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] px-3.5 py-2.5 text-xs font-medium text-[color:var(--color-text-strong)] transition-all duration-150 active:scale-[0.98] hover:border-[color:var(--color-border-strong)] cursor-pointer';

@@ -32,6 +32,12 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: 'GymSynk',
   description: 'Self-hosted gym management — QR check-in, member tracking, real-time cashier tooling.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'GymSynk',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

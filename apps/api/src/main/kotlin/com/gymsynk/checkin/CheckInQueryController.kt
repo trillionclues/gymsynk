@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/checkins")
+@RequestMapping(value = ["/checkin", "/checkins"])
 class CheckInQueryController(
     private val checkInQueryService: CheckInQueryService,
 ) {

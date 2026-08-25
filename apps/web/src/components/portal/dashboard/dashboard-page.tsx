@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
+import { MONO } from '@/lib/constants';
 import { DashboardHero } from './dashboard-hero';
 import { DashboardFeed } from './dashboard-feed';
 import { DashboardExpiring } from './dashboard-expiring';
@@ -13,9 +14,11 @@ import { useCheckInFeed } from '@/hooks/use-checkin-feed';
 import { useAuthStore } from '@/stores/authStore';
 import { getMember, lookupMemberByNumber, type MemberProfileResponse } from '@/services/member-service';
 import { CircleDollarSign, UserRoundCheck, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 export function DashboardPage() {
-  const { snapshot, loading, refreshing, error, refresh } = useDashboardSnapshot();
+  const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('today');
+  const { snapshot, loading, refreshing, error, refresh } = useDashboardSnapshot(timeRange);
   const orgId = useAuthStore((s) => s.user?.orgId);
   const { events: liveEvents, status: feedStatus } = useCheckInFeed(orgId);
 
@@ -72,6 +75,12 @@ export function DashboardPage() {
       (e) => !(snapshot?.todayCheckIns ?? []).some((ci) => ci.checkInId === e.checkInId),
     ).length;
 
+  const rangeLabels = {
+    today: { checkIns: "Today's check-ins", revenue: 'Revenue today' },
+    '7d': { checkIns: '7-Day check-ins', revenue: '7-Day revenue' },
+    '30d': { checkIns: '30-Day check-ins', revenue: '30-Day revenue' },
+  };
+
   return (
     <div className="space-y-6 animate-fade-up">
       <DashboardHero onOpenRegister={() => setIsRegisterOpen(true)} />
@@ -82,11 +91,36 @@ export function DashboardPage() {
         </div>
       ) : null}
 
+      {/* Date period selector bar */}
+      <div className="flex items-center justify-between gap-4 border-b border-[color:var(--color-border)] pb-4">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-text-subtle)]" style={MONO}>
+          Overview Range
+        </span>
+        <div className="flex items-center gap-1 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-2)] p-1">
+          {(['today', '7d', '30d'] as const).map((range) => (
+            <button
+              key={range}
+              type="button"
+              onClick={() => setTimeRange(range)}
+              className={cn(
+                'rounded-lg px-3 py-1 text-xs font-medium transition-all cursor-pointer',
+                timeRange === range
+                  ? 'bg-[color:var(--color-surface)] text-[color:var(--color-text-strong)] shadow-xs font-semibold'
+                  : 'text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-strong)]',
+              )}
+              style={MONO}
+            >
+              {range === 'today' ? 'Today' : range === '7d' ? 'Last 7 Days' : 'Last 30 Days'}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Stat cards */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           icon={UserRoundCheck}
-          label="Today's check-ins"
+          label={rangeLabels[timeRange].checkIns}
           value={loading && !snapshot ? '—' : String(todayCount)}
           accent="valid"
           trend={liveEvents.length > 0 ? `+${liveEvents.length} live` : undefined}
@@ -99,7 +133,7 @@ export function DashboardPage() {
         />
         <StatCard
           icon={CircleDollarSign}
-          label="Revenue today"
+          label={rangeLabels[timeRange].revenue}
           value={loading && !snapshot ? '—' : formatCurrency(snapshot?.stats.revenueToday ?? 0)}
           accent="weekly"
         />

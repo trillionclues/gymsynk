@@ -16,6 +16,9 @@ class DashboardController(
     private val dashboardService: DashboardService,
 ) {
     @GetMapping("/stats")
-    fun stats(auth: Authentication): ResponseEntity<DashboardStatsResponse> =
-        ResponseEntity.ok(dashboardService.stats(auth.requireAuthContext().orgId))
+    fun stats(
+        @RequestParam(defaultValue = "today") range: String,
+        auth: Authentication,
+    ): ResponseEntity<DashboardStatsResponse> =
+        ResponseEntity.ok(dashboardService.stats(auth.requireAuthContext().orgId, range))
 }
